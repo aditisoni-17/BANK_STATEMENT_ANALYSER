@@ -1,4 +1,3 @@
-import re
 
 def parse_transactions(clean_text):
     """
@@ -7,24 +6,31 @@ def parse_transactions(clean_text):
     """
 
     transactions = []
+    lines = clean_text.split("\n")
 
-    # Regex pattern:
-    # Date (DD-MM-YYYY) + Description + Amount + Balance
-    pattern = re.compile(
-        r"(\d{2}-\d{2}-\d{4})\s+([A-Z\s]+?)\s+(\d+)\s+(\d+)"
-    )
+    date_pattern = re.compile(r"\d{2}-\d{2}-\d{4}")
+    amount_pattern = re.compile(r"\d{3,}")
 
-    matches = pattern.findall(clean_text)
+    for line in lines:
+        date_match = date_pattern.search(line)
+        amounts = amount_pattern.findall(line)
 
-    for match in matches:
-        date, description, amount, balance = match
+        if date_match and len(amounts) >= 1:
+            desc = line.upper()
+            amount = int(amounts[0])
 
-        transactions.append({
-            "date": date,
-            "description": description.strip(),
-            "amount": -int(amount),   # assuming debit for now
-            "balance": int(balance)
-        })
+            # 🔹 Debit / Credit logic
+            if "SALARY" in desc or "CREDIT" in desc:
+                amount = amount      # credit
+            else:
+                amount = -amount     # debit
+
+            transactions.append({
+                "date": date_match.group(),
+                "description": line.strip(),
+                "amount": amount
+            })
+
 
     return transactions
 

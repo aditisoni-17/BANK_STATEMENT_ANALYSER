@@ -1,5 +1,9 @@
 import data from "./data/sample.json";
+import Upload from "./components/Upload";
 import "./index.css";
+
+import Summary from "./components/Summary";
+import TransactionsTable from "./components/TransactionsTable";
 
 function App() {
   const totalCredit = data
@@ -15,48 +19,18 @@ function App() {
   return (
     <div className="container">
       <h1>🏦 Bank Statement Analyzer</h1>
+      <Upload />
 
-      {/* 🔹 SUMMARY */}
-      <div className="summary">
-        <div className="summary-card credit">
-          <span>Total Credit</span>
-          <strong>₹ {totalCredit}</strong>
-        </div>
 
-        <div className="summary-card debit">
-          <span>Total Debit</span>
-          <strong>₹ {totalDebit}</strong>
-        </div>
-
-        <div className="summary-card net">
-          <span>Net Amount</span>
-          <strong>₹ {netAmount}</strong>
-        </div>
-      </div>
+      <Summary
+        totalCredit={totalCredit}
+        totalDebit={totalDebit}
+        netAmount={netAmount}
+      />
 
       <h2>Transactions</h2>
 
-      <table className="transactions-table">
-        <thead>
-          <tr>
-            <th>Date</th>
-            <th>Description</th>
-            <th>Amount</th>
-          </tr>
-        </thead>
-
-        <tbody>
-          {data.map((tx, index) => (
-            <tr key={index}>
-              <td>{tx.date}</td>
-              <td>{tx.description}</td>
-              <td className={tx.amount < 0 ? "debit" : "credit"}>
-                {tx.amount}
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+      <TransactionsTable transactions={data} />
     </div>
   );
 }

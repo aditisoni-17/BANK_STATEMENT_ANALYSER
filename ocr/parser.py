@@ -1,4 +1,6 @@
-import re 
+import re
+from config import ACCOUNT_HOLDER
+
 def parse_transactions(clean_text):
     """
     Parses cleaned OCR text and extracts transactions
@@ -21,10 +23,10 @@ def parse_transactions(clean_text):
         amount = float(amounts.group().replace(" ", ""))
         desc = line.upper()
 
-        
+
 
         # 🔹 Debit / Credit logic
-        if "FROM" in desc and "TO NSACHDEV" in desc:
+        if "FROM" in desc and f"TO {ACCOUNT_HOLDER}" in desc:
             amount = amount      # credit
         else:
             amount = -amount     # debit

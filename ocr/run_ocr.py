@@ -18,12 +18,7 @@ for i, img in enumerate(images):
 
     # Clean text
     cleaned_text = clean_ocr_text(raw_text)
-
-   
-    print("\n🔍 CLEANED OCR TEXT ↓↓↓\n")
-    print(cleaned_text)
-    print("\n🔍 END CLEANED TEXT\n")
-
+    
     # Parse transactions
     transactions = parse_transactions(cleaned_text)
 

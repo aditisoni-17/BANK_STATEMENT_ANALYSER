@@ -157,3 +157,17 @@ h2 {
   padding-left: 8px;
   line-height: 30px;
 }
+.filters {
+  display: flex;
+  gap: 10px;
+  margin: 20px 0;
+}
+
+.filters input {
+  flex: 1;
+  padding: 8px;
+}
+
+.filters select {
+  padding: 8px;
+}

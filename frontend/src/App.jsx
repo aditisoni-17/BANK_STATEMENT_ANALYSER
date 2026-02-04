@@ -1,5 +1,6 @@
 import { useState } from "react";
 import Analytics from "./components/Analytics";
+import Filters from "./components/Filters";
 
 
 import Upload from "./components/Upload";
@@ -10,15 +11,31 @@ import TransactionsTable from "./components/TransactionsTable";
 
 function App() {
   const [transactions, setTransactions] = useState([]);
+  const [search, setSearch] = useState("");
+  const [type, setType] = useState("all");
+
   const totalCredit = transactions
-  .filter(tx => tx.amount > 0)
-  .reduce((sum, tx) => sum + tx.amount, 0);
+    .filter(tx => tx.amount > 0)
+    .reduce((sum, tx) => sum + tx.amount, 0);
 
   const totalDebit = transactions
     .filter(tx => tx.amount < 0)
     .reduce((sum, tx) => sum + Math.abs(tx.amount), 0);
 
   const netAmount = totalCredit - totalDebit;
+
+  const filteredTransactions = transactions.filter((tx) => {
+    const matchesSearch = tx.description
+      .toLowerCase()
+      .includes(search.toLowerCase());
+
+    const matchesType =
+      type === "all" ||
+      (type === "credit" && tx.amount > 0) ||
+      (type === "debit" && tx.amount < 0);
+
+    return matchesSearch && matchesType;
+  });
 
 
   return (
@@ -34,13 +51,22 @@ function App() {
         netAmount={netAmount}
       />
       <Analytics totalCredit={totalCredit} totalDebit={totalDebit} />
+      <Filters
+        search={search}
+        setSearch={setSearch}
+        type={type}
+        setType={setType}
+      />
+
+
 
 
       <h2>Transactions</h2>
       {transactions.length === 0 ? (
         <p>No transactions found. Upload a bank statement.</p>
       ) : (
-        <TransactionsTable transactions={transactions} />
+        <TransactionsTable transactions={filteredTransactions} />
+
       )}
     </div>
   );

@@ -1,4 +1,5 @@
-import data from "./data/sample.json";
+import { useState } from "react";
+
 import Upload from "./components/Upload";
 import "./index.css";
 
@@ -6,20 +7,23 @@ import Summary from "./components/Summary";
 import TransactionsTable from "./components/TransactionsTable";
 
 function App() {
-  const totalCredit = data
-    .filter(tx => tx.amount > 0)
-    .reduce((sum, tx) => sum + tx.amount, 0);
+  const [transactions, setTransactions] = useState([]);
+  const totalCredit = transactions
+  .filter(tx => tx.amount > 0)
+  .reduce((sum, tx) => sum + tx.amount, 0);
 
-  const totalDebit = data
+  const totalDebit = transactions
     .filter(tx => tx.amount < 0)
     .reduce((sum, tx) => sum + Math.abs(tx.amount), 0);
 
   const netAmount = totalCredit - totalDebit;
 
+
   return (
     <div className="container">
       <h1>🏦 Bank Statement Analyzer</h1>
-      <Upload />
+      <Upload onUploadSuccess={setTransactions} />
+
 
 
       <Summary
@@ -30,7 +34,7 @@ function App() {
 
       <h2>Transactions</h2>
 
-      <TransactionsTable transactions={data} />
+      <TransactionsTable transactions={transactions} />
     </div>
   );
 }

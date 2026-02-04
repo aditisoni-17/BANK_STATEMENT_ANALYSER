@@ -171,3 +171,21 @@ h2 {
 .filters select {
   padding: 8px;
 }
+.export-buttons {
+  display: flex;
+  gap: 10px;
+  margin: 15px 0;
+}
+
+.export-buttons button {
+  padding: 8px 12px;
+  border: none;
+  background: #333;
+  color: white;
+  cursor: pointer;
+  border-radius: 4px;
+}
+
+.export-buttons button:hover {
+  background: #000;
+}

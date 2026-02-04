@@ -1,6 +1,8 @@
 import { useState } from "react";
 import Analytics from "./components/Analytics";
 import Filters from "./components/Filters";
+import ExportButtons from "./components/ExportButtons";
+
 
 
 import Upload from "./components/Upload";
@@ -57,6 +59,8 @@ function App() {
         type={type}
         setType={setType}
       />
+      <ExportButtons data={filteredTransactions} />
+
 
 
 

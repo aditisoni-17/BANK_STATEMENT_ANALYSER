@@ -93,3 +93,67 @@ h2 {
   color: red;
   font-weight: bold;
 }
+/* ===== Upload Section ===== */
+.upload-box {
+  margin: 20px 0;
+  padding: 15px;
+  background: #ffffff;
+  border-radius: 6px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+}
+
+.upload-box input {
+  margin-bottom: 10px;
+}
+
+.upload-box button {
+  padding: 8px 12px;
+  background-color: #1976d2;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.upload-box button:hover {
+  background-color: #115293;
+}
+
+.file-name {
+  margin: 8px 0;
+  font-size: 14px;
+}
+.error {
+  color: red;
+  margin-top: 8px;
+}
+.analytics {
+  margin: 30px 0;
+  background: #fff;
+  padding: 15px;
+  border-radius: 6px;
+}
+
+.bar {
+  background: #eee;
+  margin: 10px 0;
+  height: 30px;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.bar-credit {
+  background: green;
+  height: 100%;
+  color: white;
+  padding-left: 8px;
+  line-height: 30px;
+}
+
+.bar-debit {
+  background: red;
+  height: 100%;
+  color: white;
+  padding-left: 8px;
+  line-height: 30px;
+}

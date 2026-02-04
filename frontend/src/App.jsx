@@ -1,4 +1,6 @@
 import { useState } from "react";
+import Analytics from "./components/Analytics";
+
 
 import Upload from "./components/Upload";
 import "./index.css";
@@ -31,10 +33,15 @@ function App() {
         totalDebit={totalDebit}
         netAmount={netAmount}
       />
+      <Analytics totalCredit={totalCredit} totalDebit={totalDebit} />
+
 
       <h2>Transactions</h2>
-
-      <TransactionsTable transactions={transactions} />
+      {transactions.length === 0 ? (
+        <p>No transactions found. Upload a bank statement.</p>
+      ) : (
+        <TransactionsTable transactions={transactions} />
+      )}
     </div>
   );
 }

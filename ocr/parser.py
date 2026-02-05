@@ -1,5 +1,20 @@
 import re
-from config import ACCOUNT_HOLDER
+from ocr.config import ACCOUNT_HOLDER;
+
+def classify_transaction(description):
+    desc = description.upper()
+
+    if "SALARY" in desc or "CREDIT" in desc:
+        return "CREDIT"
+    if "ATM" in desc:
+        return "CASH_WITHDRAWAL"
+    if "UPI" in desc:
+        return "UPI"
+    if "AMAZON" in desc or "FLIPKART" in desc:
+        return "ECOMMERCE"
+
+    return "OTHER"
+
 
 def parse_transactions(clean_text):
     """
@@ -21,7 +36,8 @@ def parse_transactions(clean_text):
             continue
 
         amount = float(amounts.group().replace(" ", ""))
-        desc = line.upper()
+        description = line.strip()
+        desc = description.upper()
 
 
 
@@ -34,6 +50,7 @@ def parse_transactions(clean_text):
         transactions.append({
             "date": date_match.group(),
             "description": line.strip(),
-            "amount": amount
+            "amount": amount,
+            "category": classify_transaction(description)
         })
     return transactions

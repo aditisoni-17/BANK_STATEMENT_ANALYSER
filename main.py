@@ -13,6 +13,10 @@ from ocr.summary import calculate_summary
 
 app = FastAPI()
 
+@app.get("/")
+def root():
+    return {"status": "Bank Statement Analyzer API running"}
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[

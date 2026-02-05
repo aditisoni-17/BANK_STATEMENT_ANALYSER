@@ -2,12 +2,8 @@ import { useState } from "react";
 import Analytics from "./components/Analytics";
 import Filters from "./components/Filters";
 import ExportButtons from "./components/ExportButtons";
-
-
-
 import Upload from "./components/Upload";
 import "./index.css";
-
 import Summary from "./components/Summary";
 import TransactionsTable from "./components/TransactionsTable";
 
@@ -15,16 +11,12 @@ function App() {
   const [transactions, setTransactions] = useState([]);
   const [search, setSearch] = useState("");
   const [type, setType] = useState("all");
+  const [summary, setSummary] = useState(null);
 
-  const totalCredit = transactions
-    .filter(tx => tx.amount > 0)
-    .reduce((sum, tx) => sum + tx.amount, 0);
-
-  const totalDebit = transactions
-    .filter(tx => tx.amount < 0)
-    .reduce((sum, tx) => sum + Math.abs(tx.amount), 0);
-
-  const netAmount = totalCredit - totalDebit;
+  const handleUploadSuccess = (data) => {
+    setTransactions(data.transactions);
+    setSummary(data.summary);
+  };
 
   const filteredTransactions = transactions.filter((tx) => {
     const matchesSearch = tx.description
@@ -43,16 +35,9 @@ function App() {
   return (
     <div className="container">
       <h1>🏦 Bank Statement Analyzer</h1>
-      <Upload onUploadSuccess={setTransactions} />
+      <Upload onUploadSuccess={handleUploadSuccess} />
+      {summary && <Summary data={summary} />}
 
-
-
-      <Summary
-        totalCredit={totalCredit}
-        totalDebit={totalDebit}
-        netAmount={netAmount}
-      />
-      <Analytics totalCredit={totalCredit} totalDebit={totalDebit} />
       <Filters
         search={search}
         setSearch={setSearch}
@@ -60,10 +45,6 @@ function App() {
         setType={setType}
       />
       <ExportButtons data={filteredTransactions} />
-
-
-
-
 
       <h2>Transactions</h2>
       {transactions.length === 0 ? (

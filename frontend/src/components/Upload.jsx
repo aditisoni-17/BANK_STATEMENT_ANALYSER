@@ -2,41 +2,47 @@ import { useState } from "react";
 
 function Upload({ onUploadSuccess }) {
   const [file, setFile] = useState(null);
-
-  const handleFileChange = (e) => {
-    setFile(e.target.files[0]);
-  };
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
   const handleUpload = async () => {
-  if (!file) {
-    alert("Please select a PDF first");
-    return;
-  }
+    if (!file) {
+      setError("Please select a PDF");
+      return;
+    }
 
-  const formData = new FormData();
-  formData.append("file", file);
+    setLoading(true);
+    setError("");
 
-  try {
-    const response = await fetch("http://127.0.0.1:8000/upload", {
-      method: "POST",
-      body: formData,
-    });
+    const formData = new FormData();
+    formData.append("file", file);
 
-    const data = await response.json();
+    try {
+      const response = await fetch("http://127.0.0.1:8000/upload", {
+        method: "POST",
+        body: formData,
+      });
 
-    onUploadSuccess(data.transactions);
-  } catch (err) {
-    console.error(err);
-    alert("Upload failed");
-  }
-};
-
+      const data = await response.json();
+      onUploadSuccess(data.transactions);
+    } catch (error) {
+      console.error(error);
+      setError("Upload failed. Try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="upload-box">
-      <input type="file" accept="application/pdf" onChange={handleFileChange} />
+      <input type="file" accept="application/pdf" onChange={(e) => setFile(e.target.files[0])} />
       {file && <p className="file-name">📄 {file.name}</p>}
-      <button onClick={handleUpload}>Upload PDF</button>
+
+      <button onClick={handleUpload} disabled={loading}>
+        {loading ? "Processing..." : "Upload PDF"}
+      </button>
+
+      {error && <p className="error">{error}</p>}
     </div>
   );
 }

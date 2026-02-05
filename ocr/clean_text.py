@@ -1,6 +1,6 @@
 import re
 
-def clean_ocr_text(raw_text):
+def clean_text(raw_text):
     """
     Cleans noisy OCR text so it can be parsed later
     """
@@ -31,4 +31,4 @@ if __name__ == "__main__":
     print(sample_text)
 
     print("\n---- AFTER ----")
-    print(clean_ocr_text(sample_text))
+    print(clean_text(sample_text))

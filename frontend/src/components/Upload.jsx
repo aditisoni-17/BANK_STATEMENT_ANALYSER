@@ -15,15 +15,23 @@ function Upload({ onUploadSuccess }) {
     setError("");
 
     const formData = new FormData();
+    console.log("form: ", formData);
     formData.append("file", file);
+    console.log("object");
 
     try {
-      const response = await fetch("http://127.0.0.1:8000/upload", {
+      for (let [key, value] of formData.entries()) {
+        console.log(key, value);
+      }
+      console.log("Form data: ", formData);
+      const response = await fetch("http://localhost:8000/upload", {
         method: "POST",
         body: formData,
       });
+      console.log("ob");
 
       const data = await response.json();
+      console.log("Data coming: ", data);
       onUploadSuccess(data.transactions);
     } catch (error) {
       console.error(error);
@@ -35,7 +43,11 @@ function Upload({ onUploadSuccess }) {
 
   return (
     <div className="upload-box">
-      <input type="file" accept="application/pdf" onChange={(e) => setFile(e.target.files[0])} />
+      <input
+        type="file"
+        accept="application/pdf"
+        onChange={(e) => setFile(e.target.files[0])}
+      />
       {file && <p className="file-name">📄 {file.name}</p>}
 
       <button onClick={handleUpload} disabled={loading}>

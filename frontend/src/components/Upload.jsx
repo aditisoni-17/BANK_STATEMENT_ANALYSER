@@ -15,24 +15,20 @@ function Upload({ onUploadSuccess }) {
     setError("");
 
     const formData = new FormData();
-    console.log("form: ", formData);
     formData.append("file", file);
-    console.log("object");
 
     try {
-      for (let [key, value] of formData.entries()) {
-        console.log(key, value);
-      }
-      console.log("Form data: ", formData);
-      const response = await fetch("http://localhost:8000/upload", {
+      const response = await fetch("http://127.0.0.1:8000/upload", {
         method: "POST",
         body: formData,
       });
-      console.log("ob");
+
+      if (!response.ok) {
+        throw new Error(`Upload failed with status ${response.status}`);
+      }
 
       const data = await response.json();
-      console.log("Data coming: ", data);
-      onUploadSuccess(data.transactions);
+      onUploadSuccess(data);
     } catch (error) {
       console.error(error);
       setError("Upload failed. Try again.");

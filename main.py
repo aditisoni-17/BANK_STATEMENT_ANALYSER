@@ -42,20 +42,24 @@ async def upload(file: UploadFile = File(...)):
         f.write(await file.read())
 
     images = pdf_to_images(pdf_path)
-    raw_text_parts = []
+    print("Img: ", images)
+
+    full_text = ""
     for img in images:
         processed = preprocess_image(img)
+        print("Process", processed)
         text = extract_text(processed)
-        raw_text_parts.append(text)
+        # print("text: ", text)
+        full_text += text + "\n"
+        # print("full: ", full_text)
 
-    raw_text = "\n".join(raw_text_parts)
-    cleaned_text = clean_text(raw_text)
-    transactions = parse_transactions(cleaned_text)
-    summary = calculate_summary(transactions)
+    print("Full text: ", full_text)
+    cleaned = clean_text(full_text)
+    print("Cleaned: ", cleaned)
+    transactions = parse_transactions(cleaned)
+    print("Transactions: ", transactions)
 
     return {
-        "raw_text": raw_text,
-        "cleaned_text": cleaned_text,
-        "transactions": transactions,
-        "summary": summary,
+        "summary": calculate_summary(transactions),
+        "transactions": transactions
     }

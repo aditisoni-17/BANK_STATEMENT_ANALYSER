@@ -23,15 +23,15 @@ function Upload({ onUploadSuccess }) {
         body: formData,
       });
 
-      const data = await response.json().catch(() => null);
-
       if (!response.ok) {
-        throw new Error(data?.detail || `Upload failed with status ${response.status}`);
+        throw new Error(`Upload failed with status ${response.status}`);
       }
 
+      const data = await response.json();
       onUploadSuccess(data);
     } catch (error) {
-      setError(error.message || "Upload failed");
+      console.error(error);
+      setError("Upload failed. Try again.");
     } finally {
       setLoading(false);
     }
@@ -43,7 +43,6 @@ function Upload({ onUploadSuccess }) {
         type="file"
         accept="application/pdf"
         onChange={(e) => setFile(e.target.files[0])}
-        disabled={loading}
       />
       {file && <p className="file-name">📄 {file.name}</p>}
 
@@ -51,7 +50,6 @@ function Upload({ onUploadSuccess }) {
         {loading ? "Processing..." : "Upload PDF"}
       </button>
 
-      {loading && <p className="status-text">Processing...</p>}
       {error && <p className="error">{error}</p>}
     </div>
   );

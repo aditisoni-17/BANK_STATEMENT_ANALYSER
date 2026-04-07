@@ -14,19 +14,6 @@ body {
   margin: auto;
 }
 
-.pipeline-status {
-  display: flex;
-  gap: 8px;
-  align-items: center;
-  flex-wrap: wrap;
-  margin: 12px 0 20px;
-  padding: 10px 12px;
-  border: 1px solid #d0d7de;
-  border-radius: 6px;
-  background: #f6f8fa;
-  font-size: 14px;
-}
-
 /* ===== Headings ===== */
 h1 {
   margin-bottom: 10px;
@@ -35,21 +22,6 @@ h1 {
 h2 {
   margin-top: 30px;
   margin-bottom: 10px;
-}
-
-.section-header {
-  margin: 20px 0 12px;
-}
-
-.section-header h2 {
-  margin: 0 0 4px;
-  font-size: 20px;
-}
-
-.section-header p {
-  margin: 0;
-  color: #555;
-  font-size: 14px;
 }
 
 /* ===== Summary Section ===== */
@@ -97,12 +69,6 @@ h2 {
   border-collapse: collapse;
   background: #ffffff;
   margin-top: 10px;
-}
-
-.transaction-count {
-  margin: 8px 0 12px;
-  color: #555;
-  font-size: 14px;
 }
 
 .transactions-table th,
@@ -157,12 +123,6 @@ h2 {
   margin: 8px 0;
   font-size: 14px;
 }
-
-.status-text {
-  margin-top: 8px;
-  color: #555;
-}
-
 .error {
   color: red;
   margin-top: 8px;
@@ -228,51 +188,4 @@ h2 {
 
 .export-buttons button:hover {
   background: #000;
-}
-
-.view-tabs {
-  display: flex;
-  gap: 10px;
-  margin: 20px 0 12px;
-}
-
-.view-tabs button {
-  padding: 8px 12px;
-  border: 1px solid #d0d7de;
-  background: #fff;
-  border-radius: 4px;
-  cursor: pointer;
-}
-
-.view-tabs button:disabled {
-  background: #f0f0f0;
-  color: #333;
-  cursor: default;
-}
-
-.empty-state {
-  padding: 16px;
-  border: 1px solid #d0d7de;
-  border-radius: 6px;
-  background: #fafafa;
-}
-
-.empty-state h3 {
-  margin: 0 0 6px;
-  font-size: 16px;
-}
-
-.empty-state p {
-  margin: 0;
-  color: #555;
-}
-
-.text-panel {
-  white-space: pre-wrap;
-  word-break: break-word;
-  padding: 16px;
-  border: 1px solid #d0d7de;
-  border-radius: 6px;
-  background: #fff;
-  line-height: 1.5;
 }

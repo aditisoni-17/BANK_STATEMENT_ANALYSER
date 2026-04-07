@@ -12,10 +12,20 @@ function App() {
   const [type, setType] = useState("all");
   const [summary, setSummary] = useState(null);
   const [category, setCategory] = useState("all");
+  const [rawText, setRawText] = useState("");
+  const [cleanedText, setCleanedText] = useState("");
+  const [view, setView] = useState("parsed");
 
-  const handleUploadSuccess = ({ summary, transactions }) => {
+  const handleUploadSuccess = ({
+    summary,
+    transactions,
+    raw_text,
+    cleaned_text,
+  }) => {
     setTransactions(transactions);
     setSummary(summary);
+    setRawText(raw_text);
+    setCleanedText(cleaned_text);
   };
 
   const filteredTransactions = transactions.filter((tx) => {
@@ -37,6 +47,17 @@ function App() {
     <div className="container">
       <h1>🏦 Bank Statement Analyzer</h1>
       <Upload onUploadSuccess={handleUploadSuccess} />
+
+      <div className="pipeline-status" aria-label="Pipeline status">
+        <span>PDF</span>
+        <span>→</span>
+        <span>OCR</span>
+        <span>→</span>
+        <span>Clean</span>
+        <span>→</span>
+        <span>Parsed</span>
+      </div>
+
       {summary && (
         <Summary
           totalCredit={summary.total_credit}
@@ -45,22 +66,81 @@ function App() {
         />
       )}
 
-      <Filters
-        search={search}
-        setSearch={setSearch}
-        type={type}
-        setType={setType}
-        category={category}
-        setCategory={setCategory}
-      />
+      <div className="view-tabs">
+        <button onClick={() => setView("parsed")} disabled={view === "parsed"}>
+          Parsed
+        </button>
+        <button onClick={() => setView("cleaned")} disabled={view === "cleaned"}>
+          Cleaned
+        </button>
+        <button onClick={() => setView("raw")} disabled={view === "raw"}>
+          Raw
+        </button>
+      </div>
 
-      <ExportButtons data={filteredTransactions} />
+      {view === "parsed" && (
+        <>
+          <div className="section-header">
+            <h2>Parsed Transactions</h2>
+            <p>Review extracted transactions, apply filters, and export results.</p>
+          </div>
 
-      <h2>Transactions</h2>
-      {filteredTransactions?.length === 0 ? (
-        <p>No transactions found. Upload a bank statement.</p>
-      ) : (
-        <TransactionsTable transactions={filteredTransactions} />
+          {transactions.length === 0 ? (
+            <div className="empty-state">
+              <h3>No data yet</h3>
+              <p>Upload a bank statement PDF to run the OCR pipeline.</p>
+            </div>
+          ) : (
+            <>
+              <Filters
+                search={search}
+                setSearch={setSearch}
+                type={type}
+                setType={setType}
+                category={category}
+                setCategory={setCategory}
+              />
+
+              <ExportButtons data={filteredTransactions} />
+
+              {filteredTransactions.length === 0 ? (
+                <div className="empty-state">
+                  <h3>No matching transactions</h3>
+                  <p>Try changing the search text or filter values.</p>
+                </div>
+              ) : (
+                <TransactionsTable
+                  transactions={filteredTransactions}
+                  totalCount={transactions.length}
+                />
+              )}
+            </>
+          )}
+        </>
+      )}
+
+      {view === "cleaned" && (
+        <>
+          <div className="section-header">
+            <h2>Cleaned OCR Text</h2>
+            <p>Normalized OCR output after cleanup and preprocessing.</p>
+          </div>
+          <pre className="text-panel">
+            {cleanedText || "No cleaned OCR text available."}
+          </pre>
+        </>
+      )}
+
+      {view === "raw" && (
+        <>
+          <div className="section-header">
+            <h2>Raw OCR Text</h2>
+            <p>Direct OCR output before cleanup.</p>
+          </div>
+          <pre className="text-panel">
+            {rawText || "No raw OCR text available."}
+          </pre>
+        </>
       )}
     </div>
   );

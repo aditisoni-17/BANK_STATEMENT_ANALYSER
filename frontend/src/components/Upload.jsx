@@ -4,18 +4,18 @@ function Upload({ onUploadSuccess }) {
   const [file, setFile] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [status, setStatus] = useState("");
+  const [transactions, setTransactions] = useState(null);
 
   const handleUpload = async () => {
     if (!file) {
       setError("Please select a PDF");
-      setStatus("");
+      setTransactions(null);
       return;
     }
 
     setLoading(true);
     setError("");
-    setStatus("");
+    setTransactions(null);
 
     const formData = new FormData();
     formData.append("file", file);
@@ -45,17 +45,44 @@ function Upload({ onUploadSuccess }) {
       }
 
       onUploadSuccess(data);
-      setStatus(
-        data.transactions.length > 0
-          ? "Upload successful"
-          : "No transactions found"
-      );
+      setTransactions(data.transactions);
     } catch (error) {
       setError(error.message || "Upload failed. Try again.");
-      setStatus("");
+      setTransactions(null);
     } finally {
       setLoading(false);
     }
+  };
+
+  const renderState = () => {
+    if (loading) {
+      return <p className="status-text">Uploading...</p>;
+    }
+
+    if (error) {
+      return <p className="error">Error: {error}</p>;
+    }
+
+    if (transactions?.length === 0) {
+      return <p className="status-text">No transactions found</p>;
+    }
+
+    if (transactions?.length > 0) {
+      return (
+        <div className="status-text">
+          <p>Upload successful</p>
+          <ul>
+            {transactions.map((tx, index) => (
+              <li key={index}>
+                {tx.date} - {tx.description} - {tx.amount}
+              </li>
+            ))}
+          </ul>
+        </div>
+      );
+    }
+
+    return null;
   };
 
   return (
@@ -72,9 +99,7 @@ function Upload({ onUploadSuccess }) {
         {loading ? "Uploading..." : "Upload PDF"}
       </button>
 
-      {loading && <p className="status-text">Uploading...</p>}
-      {!loading && status && <p className="status-text">{status}</p>}
-      {error && <p className="error" style={{ color: "red" }}>{error}</p>}
+      {renderState()}
     </div>
   );
 }

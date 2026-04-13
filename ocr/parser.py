@@ -128,7 +128,23 @@ def parse_transactions(clean_text: str) -> List[dict]:
     `02/01/2024 UPI TO JOHN 500.00 03/01/2024 SWIGGY 300.00`
     are split into separate transactions.
     """
-    normalized_text = _normalize_text(clean_text)
+    useful_lines = []
+    for line in clean_text.splitlines():
+        line = re.sub(r"\s+", " ", line).strip()
+
+        if not line:
+            continue
+
+        has_date = DATE_PATTERN.search(line)
+        has_amount = AMOUNT_PATTERN.search(line)
+        is_noise = NOISE_PATTERN.search(line.upper())
+
+        if is_noise and not (has_date or has_amount):
+            continue
+
+        useful_lines.append(line)
+
+    normalized_text = _normalize_text(" ".join(useful_lines))
 
     if not normalized_text:
         return []
@@ -147,6 +163,9 @@ def parse_transactions(clean_text: str) -> List[dict]:
             else len(normalized_text)
         )
         chunk = normalized_text[start:end].strip()
+
+        if not AMOUNT_PATTERN.search(chunk):
+            continue
 
         transaction = _extract_transaction(chunk)
         if transaction:

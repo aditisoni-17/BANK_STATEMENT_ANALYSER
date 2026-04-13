@@ -1,6 +1,7 @@
 import { useState } from "react";
 import Filters from "./components/Filters";
 import ExportButtons from "./components/ExportButtons";
+import ExpenseChart from "./components/ExpenseChart";
 import Upload from "./components/Upload";
 import "./index.css";
 import Summary from "./components/Summary";
@@ -44,6 +45,8 @@ function App() {
           netAmount={summary.net_balance}
         />
       )}
+
+      {transactions.length > 0 && <ExpenseChart transactions={transactions} />}
 
       <Filters
         search={search}

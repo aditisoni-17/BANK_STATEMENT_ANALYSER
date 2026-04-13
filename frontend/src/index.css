@@ -120,7 +120,7 @@ h2 {
 }
 
 .upload-box button:disabled {
-  background-color: #8aaed6;
+  opacity: 0.6;
   cursor: not-allowed;
 }
 
@@ -131,6 +131,11 @@ h2 {
 
 .status-text {
   color: #555;
+  margin-top: 8px;
+}
+
+.success,
+.loading {
   margin-top: 8px;
 }
 

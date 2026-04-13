@@ -6,6 +6,3 @@ opencv-python
 pillow
 numpy
 python-multipart
-fastapi
-uvicorn
-

@@ -1,161 +1,97 @@
-# 🏦 Bank Statement Analyzer (OCR-based)
+# Bank Statement Analyzer
 
-## 📌 Overview
+A full-stack OCR-based application that extracts structured transactions from bank statement PDFs and visualizes expense insights in a React dashboard.
 
-This project extracts **structured transaction data** from **scanned bank statement PDFs** using **OCR (Optical Character Recognition)**.
+The system converts scanned or image-based PDF statements into text, cleans noisy OCR output, parses transaction fields, summarizes credits/debits, and displays the results in a frontend-friendly format.
 
-👉 It converts **unstructured scanned PDFs** into **machine-readable JSON**, handling real-world OCR noise like:
+## Features
 
-* broken text
-* spaced numbers (e.g. `15 000.00`)
-* inconsistent formats
+- PDF upload and OCR extraction using Tesseract
+- Image preprocessing with OpenCV for better OCR accuracy
+- Regex-based transaction parsing for date, description, amount, and category
+- Debit/credit summary generation
+- React dashboard for viewing transactions
+- Category-wise expense chart using Chart.js
+- Deployment-ready FastAPI backend configuration for Render
+- Environment-based frontend API configuration for Vercel
 
-This is **not a tutorial-style project**, but a **real OCR pipeline** inspired by production-grade systems.
+## Tech Stack
 
----
+- Backend: Python, FastAPI, Uvicorn
+- OCR: Tesseract, pdf2image, OpenCV, Pillow
+- Parsing: Python regex-based parser
+- Frontend: React, Vite, Chart.js
+- Deployment: Render, Vercel
 
-## ⚙️ Tech Stack
+## Setup
 
-* Python
-* Tesseract OCR
-* OpenCV
-* pdf2image
-* NumPy
-* Regex-based parsing
-* Git / GitHub
+### Backend
 
----
-
-## 🔁 Pipeline Flow
-
-```
-PDF
- → Image (pdf2image)
- → Preprocessing (OpenCV)
- → OCR (Tesseract)
- → Text Cleaning
- → OCR-aware Parsing
- → Debit / Credit Detection
- → JSON Output
-```
-
----
-
-## 🧠 Key Features
-
-* ✅ Handles **scanned PDFs** (image-based, not selectable text)
-* ✅ OCR-aware parsing (dates, spaced amounts, noisy text)
-* ✅ Debit / Credit detection using transaction direction
-* ✅ Configurable account holder (no hard-coding)
-* ✅ Clean, frontend-ready `output.json`
-
----
-
-## 📂 Project Structure
-
-```
-backend/
-│
-├── ocr/
-│   ├── pdf_to_image.py
-│   ├── preprocess.py
-│   ├── ocr_engine.py
-│   ├── clean_text.py
-│   ├── parser.py
-│   ├── config.py
-│   └── output.json
-│
-├── sample_files/
-│   └── statement.pdf
-│
-├── requirements.txt
-└── README.md
-```
-
----
-
-## ▶️ How to Run
-
-### 1️⃣ Create virtual environment
-
-```
+```bash
 python3 -m venv venv
 source venv/bin/activate
-```
-
-### 2️⃣ Install dependencies
-
-```
 pip install -r requirements.txt
+python -m uvicorn main:app --host 0.0.0.0 --port 8000
 ```
 
-### 3️⃣ Add scanned PDF
+Backend runs at:
 
-Place your **scanned bank statement** here:
-
-```
-backend/sample_files/statement.pdf
+```text
+http://localhost:8000
 ```
 
-> ⚠️ The PDF must be **image-based** (scanned or photographed). Text-selectable PDFs will not reflect real OCR behavior.
+### Frontend
 
-### 4️⃣ Run OCR pipeline
-
-```
-python ocr/run_ocr.py
-```
-
----
-
-## 📄 Output
-
-The final structured output is saved as:
-
-```
-ocr/output.json
+```bash
+cd frontend
+npm install
 ```
 
-### Example Output
+Create a frontend `.env` file:
 
+```env
+VITE_API_URL=http://localhost:8000
 ```
-[
-  {
-    "date": "18/12/2025",
-    "description": "UPI/... FROM JYOTI-KHAN ... TO NSACHDEV ...",
-    "amount": 15000.0
-  },
-  {
-    "date": "17/12/2025",
-    "description": "UPI/... TO BLINKIT ...",
-    "amount": -23.0
+
+Run the app:
+
+```bash
+npm run dev
+```
+
+Frontend runs at:
+
+```text
+http://localhost:5173
+```
+
+## API
+
+Upload a PDF bank statement:
+
+```text
+POST /upload
+```
+
+Response includes parsed transactions and summary data:
+
+```json
+{
+  "success": true,
+  "data": {
+    "transactions": [],
+    "summary": {}
   }
-]
+}
 ```
 
----
+## Live Demo
 
-## ⚠️ Limitations
+- Frontend: Add Vercel URL here
+- Backend: Add Render URL here
 
-* OCR accuracy depends heavily on **scan quality**
-* Transactions may be skipped if text is **partially unreadable**
-* The system performs **best-effort extraction**, not guaranteed 100% accuracy
+## Notes
 
-> These limitations closely reflect **real-world OCR systems**.
-
----
-
-## 💡 What I Learned
-
-* OCR output is **inherently noisy and unpredictable**
-* Parsing logic must be **tolerant, not strict**
-* Real engineering involves **debugging messy data**, not just writing regex
-* Clean architecture and **config abstraction improve scalability**
-
----
-
-## 🚀 Future Improvements
-
-* Improved **table detection** for complex layouts
-* **Confidence scoring** per extracted transaction
-* Interactive **React dashboard** for analysis & visualization
-* Bank-specific parsing rules for **higher accuracy**
+- OCR accuracy depends on PDF scan quality.
+- The parser is designed for noisy OCR output but may require bank-specific tuning.
+- For production, update CORS origins and `VITE_API_URL` with deployed URLs.

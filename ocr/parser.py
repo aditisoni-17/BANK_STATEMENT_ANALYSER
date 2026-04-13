@@ -2,6 +2,7 @@ import re
 from typing import Dict, List, Optional
 
 from ocr.config import ACCOUNT_HOLDER
+from predict_category import predict_category
 
 DATE_PATTERN = re.compile(r"\b\d{2}/\d{2}/\d{4}\b")
 DECIMAL_PATTERN = re.compile(r"\d+\.\d{2}")
@@ -13,18 +14,10 @@ NOISE_PATTERN = re.compile(
 
 
 def classify_transaction(description: str) -> str:
-    desc = description.upper()
-
-    if "SALARY" in desc or "CREDIT" in desc:
-        return "CREDIT"
-    if "ATM" in desc:
-        return "CASH_WITHDRAWAL"
-    if "UPI" in desc:
-        return "UPI"
-    if "AMAZON" in desc or "FLIPKART" in desc:
-        return "ECOMMERCE"
-
-    return "OTHER"
+    try:
+        return predict_category(description)
+    except Exception:
+        return "OTHER"
 
 
 def _normalize_text(clean_text: str) -> str:

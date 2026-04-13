@@ -5,4 +5,6 @@ pdf2image
 opencv-python
 pillow
 numpy
+pandas
 python-multipart
+scikit-learn

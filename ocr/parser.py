@@ -4,7 +4,9 @@ from typing import Dict, List, Optional
 from ocr.config import ACCOUNT_HOLDER
 
 DATE_PATTERN = re.compile(r"\b\d{2}/\d{2}/\d{4}\b")
-AMOUNT_PATTERN = re.compile(r"(?<![A-Za-z0-9])(\d[\d,\s]*\.\d{2})(?!\d)")
+DECIMAL_PATTERN = re.compile(r"\d+\.\d{2}")
+AMOUNT_PATTERN = re.compile(r"(?<![A-Za-z0-9.])(\d+\.\d{2})(?![A-Za-z0-9.])")
+MAX_TRANSACTION_AMOUNT = 1_000_000
 NOISE_PATTERN = re.compile(
     r"\b(?:PAGE\s+\d+\s+OF\s+\d+|TRANSACTION|CHEQUE|WITHDRAWALS|RUNNING\s+BALANCE)\b"
 )
@@ -38,11 +40,36 @@ def _normalize_text(clean_text: str) -> str:
 
 def _normalize_amount(raw_amount: str) -> float:
     """
-    Converts OCR-friendly amount strings like `1 200.00` or `15,000.00`
-    into a float.
+    Converts valid decimal amount strings like `1200.00` into a float.
     """
-    normalized = raw_amount.replace(" ", "").replace(",", "")
-    return float(normalized)
+    return float(raw_amount)
+
+
+def _is_valid_amount(match) -> bool:
+    amount = _normalize_amount(match.group(1))
+    return amount <= MAX_TRANSACTION_AMOUNT
+
+
+def _select_transaction_amount_match(text: str):
+    decimal_matches = list(DECIMAL_PATTERN.finditer(text))
+    amount_matches = list(AMOUNT_PATTERN.finditer(text))
+
+    if not amount_matches:
+        return None
+
+    if len(decimal_matches) > len(amount_matches) and len(amount_matches) == 1:
+        return None
+
+    if len(amount_matches) == 1:
+        return amount_matches[0] if _is_valid_amount(amount_matches[0]) else None
+
+    # The final decimal in a bank row is commonly the running balance, so pick
+    # the last valid amount before it.
+    for match in reversed(amount_matches[:-1]):
+        if _is_valid_amount(match):
+            return match
+
+    return None
 
 
 def _clean_description(raw_description: str) -> str:
@@ -96,15 +123,11 @@ def _extract_transaction(chunk: str) -> Optional[Dict[str, object]]:
     amount before the final balance value.
     """
     date_match = DATE_PATTERN.search(chunk)
-    amount_matches = list(AMOUNT_PATTERN.finditer(chunk))
+    amount_match = _select_transaction_amount_match(chunk)
 
-    if not date_match or not amount_matches:
+    if not date_match or not amount_match:
         return None
 
-    # Many bank statements contain both transaction amount and running balance.
-    # If both are present, the transaction amount is usually the value before
-    # the final balance amount; otherwise use the only amount found.
-    amount_match = amount_matches[-2] if len(amount_matches) >= 2 else amount_matches[-1]
     date = date_match.group()
     amount = _normalize_amount(amount_match.group(1))
     description = _clean_description(chunk[date_match.end():amount_match.start()])

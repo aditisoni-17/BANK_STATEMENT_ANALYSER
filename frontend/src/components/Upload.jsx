@@ -4,15 +4,18 @@ function Upload({ onUploadSuccess }) {
   const [file, setFile] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [status, setStatus] = useState("");
 
   const handleUpload = async () => {
     if (!file) {
       setError("Please select a PDF");
+      setStatus("");
       return;
     }
 
     setLoading(true);
     setError("");
+    setStatus("");
 
     const formData = new FormData();
     formData.append("file", file);
@@ -42,8 +45,14 @@ function Upload({ onUploadSuccess }) {
       }
 
       onUploadSuccess(data);
+      setStatus(
+        data.transactions.length > 0
+          ? "Upload successful"
+          : "No transactions found"
+      );
     } catch (error) {
       setError(error.message || "Upload failed. Try again.");
+      setStatus("");
     } finally {
       setLoading(false);
     }
@@ -60,11 +69,12 @@ function Upload({ onUploadSuccess }) {
       {file && <p className="file-name">📄 {file.name}</p>}
 
       <button onClick={handleUpload} disabled={loading}>
-        {loading ? "Processing..." : "Upload PDF"}
+        {loading ? "Uploading..." : "Upload PDF"}
       </button>
 
-      {loading && <p className="status-text">Extracting transactions from PDF...</p>}
-      {error && <p className="error">{error}</p>}
+      {loading && <p className="status-text">Uploading...</p>}
+      {!loading && status && <p className="status-text">{status}</p>}
+      {error && <p className="error" style={{ color: "red" }}>{error}</p>}
     </div>
   );
 }

@@ -51,25 +51,25 @@ def _is_valid_amount(match) -> bool:
 
 
 def _select_transaction_amount_match(text: str):
-    decimal_matches = list(DECIMAL_PATTERN.finditer(text))
-    amount_matches = list(AMOUNT_PATTERN.finditer(text))
+    matches = list(re.finditer(r"\b\d{1,6}\.\d{2}\b", text))
 
-    if not amount_matches:
+    if not matches:
         return None
 
-    if len(decimal_matches) > len(amount_matches) and len(amount_matches) == 1:
+    valid_matches = []
+
+    for match in matches:
+        amount = float(match.group())
+
+        # filter unrealistic values
+        if 0 < amount < 100000:
+            valid_matches.append(match)
+
+    if not valid_matches:
         return None
 
-    if len(amount_matches) == 1:
-        return amount_matches[0] if _is_valid_amount(amount_matches[0]) else None
-
-    # The final decimal in a bank row is commonly the running balance, so pick
-    # the last valid amount before it.
-    for match in reversed(amount_matches[:-1]):
-        if _is_valid_amount(match):
-            return match
-
-    return None
+    # pick LAST valid amount (most reliable)
+    return valid_matches[-1]
 
 
 def _clean_description(raw_description: str) -> str:
@@ -192,6 +192,13 @@ def parse_transactions(clean_text: str) -> List[dict]:
 
         transaction = _extract_transaction(chunk)
         if transaction:
+            amount = transaction["amount"]
+            if amount is None or abs(amount) > 100000:
+                continue
+
+            if not transaction["description"]:
+                continue
+
             transactions.append(transaction)
 
     return transactions

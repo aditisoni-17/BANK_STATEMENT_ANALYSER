@@ -23,15 +23,27 @@ function Upload({ onUploadSuccess }) {
         body: formData,
       });
 
+      const payload = await response.json().catch(() => null);
+
       if (!response.ok) {
-        throw new Error(`Upload failed with status ${response.status}`);
+        throw new Error(
+          payload?.message || payload?.detail || `Upload failed with status ${response.status}`
+        );
       }
 
-      const data = await response.json();
+      if (payload?.success === false) {
+        throw new Error(payload.message || "Upload failed");
+      }
+
+      const data = payload?.data || payload;
+
+      if (!data || !Array.isArray(data.transactions)) {
+        throw new Error("No parsed transaction data returned from the server");
+      }
+
       onUploadSuccess(data);
     } catch (error) {
-      console.error(error);
-      setError("Upload failed. Try again.");
+      setError(error.message || "Upload failed. Try again.");
     } finally {
       setLoading(false);
     }
@@ -43,6 +55,7 @@ function Upload({ onUploadSuccess }) {
         type="file"
         accept="application/pdf"
         onChange={(e) => setFile(e.target.files[0])}
+        disabled={loading}
       />
       {file && <p className="file-name">📄 {file.name}</p>}
 
@@ -50,6 +63,7 @@ function Upload({ onUploadSuccess }) {
         {loading ? "Processing..." : "Upload PDF"}
       </button>
 
+      {loading && <p className="status-text">Extracting transactions from PDF...</p>}
       {error && <p className="error">{error}</p>}
     </div>
   );

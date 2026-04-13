@@ -119,10 +119,21 @@ h2 {
   background-color: #115293;
 }
 
+.upload-box button:disabled {
+  background-color: #8aaed6;
+  cursor: not-allowed;
+}
+
 .file-name {
   margin: 8px 0;
   font-size: 14px;
 }
+
+.status-text {
+  color: #555;
+  margin-top: 8px;
+}
+
 .error {
   color: red;
   margin-top: 8px;

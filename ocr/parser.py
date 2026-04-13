@@ -50,7 +50,8 @@ def _clean_description(raw_description: str) -> str:
     Removes the most common header/footer OCR noise while keeping
     transaction-specific content intact.
     """
-    description = NOISE_PATTERN.sub(" ", raw_description)
+    description = DATE_PATTERN.sub(" ", raw_description)
+    description = NOISE_PATTERN.sub(" ", description)
     description = re.sub(r"\s+", " ", description)
     return description.strip(" -|:.,")
 
@@ -91,8 +92,8 @@ def _extract_transaction(chunk: str) -> Optional[Dict[str, object]]:
     """
     Parses one date-anchored chunk into a transaction.
     The chunk may still contain OCR noise, repeated dates, or balance values.
-    We use the last amount in the chunk as the transaction amount because OCR
-    blocks usually place the transaction amount nearest to the end of the row.
+    If a row contains both transaction amount and running balance, we use the
+    amount before the final balance value.
     """
     date_match = DATE_PATTERN.search(chunk)
     amount_matches = list(AMOUNT_PATTERN.finditer(chunk))
@@ -100,7 +101,10 @@ def _extract_transaction(chunk: str) -> Optional[Dict[str, object]]:
     if not date_match or not amount_matches:
         return None
 
-    amount_match = amount_matches[-1]
+    # Many bank statements contain both transaction amount and running balance.
+    # If both are present, the transaction amount is usually the value before
+    # the final balance amount; otherwise use the only amount found.
+    amount_match = amount_matches[-2] if len(amount_matches) >= 2 else amount_matches[-1]
     date = date_match.group()
     amount = _normalize_amount(amount_match.group(1))
     description = _clean_description(chunk[date_match.end():amount_match.start()])

@@ -12,15 +12,17 @@ NOISE_PATTERN = re.compile(
 MAX_TRANSACTION_AMOUNT = 1_000_000
 
 
-def classify_transaction(description: str) -> str:
+def classify_transaction(description: str) -> Dict[str, object]:
     try:
         prediction = predict_category(description)
         if isinstance(prediction, dict):
-            category = prediction.get("category")
-            return category or "OTHER"
-        return prediction or "OTHER"
+            category = str(prediction.get("category") or "OTHER").strip() or "OTHER"
+            confidence = float(prediction.get("confidence") or 0.0)
+            return {"category": category, "confidence": confidence}
+        category = str(prediction or "OTHER").strip() or "OTHER"
+        return {"category": category, "confidence": 0.0}
     except Exception:
-        return "OTHER"
+        return {"category": "OTHER", "confidence": 0.0}
 
 
 def _normalize_text(clean_text: str) -> str:
@@ -99,12 +101,14 @@ def _extract_transaction(chunk: str) -> Optional[Dict[str, object]]:
         return None
 
     signed_amount = _infer_signed_amount(description, amount)
+    prediction = classify_transaction(description)
 
     return {
         "date": date,
         "description": description,
         "amount": signed_amount,
-        "category": classify_transaction(description),
+        "category": prediction["category"],
+        "confidence": prediction["confidence"],
     }
 
 

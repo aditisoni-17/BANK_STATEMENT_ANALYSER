@@ -18,12 +18,14 @@ function TransactionsTable({ transactions }) {
 
       <tbody>
         {transactions.map((tx, index) => (
-          <tr key={index} className={tx.anomaly ? "anomaly-row" : ""}>
+          <tr
+            key={index}
+            className={tx.anomaly ? "anomaly-row" : ""}
+            style={(Number(tx.confidence) || 0) < 0.6 ? { backgroundColor: "#fff7cc" } : undefined}
+          >
             <td>{tx.date}</td>
             <td>{tx.description}</td>
-            <td className={(Number(tx.confidence) || 0) < 0.6 ? "low-confidence-cell" : ""}>
-              {`${tx.category || "OTHER"} (${formatConfidence(tx.confidence)})`}
-            </td>
+            <td>{`${tx.category || "OTHER"} (${formatConfidence(tx.confidence)})`}</td>
             <td className={tx.amount < 0 ? "debit" : "credit"}>
               {tx.amount}
             </td>

@@ -14,8 +14,11 @@ MAX_TRANSACTION_AMOUNT = 1_000_000
 
 def classify_transaction(description: str) -> str:
     try:
-        category = predict_category(description)
-        return category or "OTHER"
+        prediction = predict_category(description)
+        if isinstance(prediction, dict):
+            category = prediction.get("category")
+            return category or "OTHER"
+        return prediction or "OTHER"
     except Exception:
         return "OTHER"
 

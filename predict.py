@@ -27,19 +27,25 @@ def _load_artifacts():
             _vectorizer = pickle.load(vectorizer_file)
 
 
-def predict_category(description: str) -> str:
+def predict_category(description: str):
     try:
         if not description or not str(description).strip():
-            return "OTHER"
+            return {"category": "OTHER", "confidence": 0.0}
 
         _load_artifacts()
         cleaned_description = _clean_text(description)
         if not cleaned_description:
-            return "OTHER"
+            return {"category": "OTHER", "confidence": 0.0}
 
         features = _vectorizer.transform([cleaned_description])
-        prediction = _model.predict(features)
-        category = str(prediction[0]).strip()
-        return category or "OTHER"
+        probabilities = _model.predict_proba(features)[0]
+        best_index = int(probabilities.argmax())
+        confidence = float(probabilities[best_index])
+        category = str(_model.classes_[best_index]).strip()
+
+        if confidence < 0.5 or not category:
+            return {"category": "OTHER", "confidence": confidence}
+
+        return {"category": category, "confidence": confidence}
     except Exception:
-        return "OTHER"
+        return {"category": "OTHER", "confidence": 0.0}

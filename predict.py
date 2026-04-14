@@ -5,6 +5,7 @@ from pathlib import Path
 
 MODEL_PATH = Path(__file__).with_name("model.pkl")
 VECTORIZER_PATH = Path(__file__).with_name("vectorizer.pkl")
+LOG_PATH = Path(__file__).with_name("misclassified.log")
 
 _model = None
 _vectorizer = None
@@ -27,6 +28,14 @@ def _load_artifacts():
             _vectorizer = pickle.load(vectorizer_file)
 
 
+def _log_low_confidence_prediction(description: str, category: str) -> None:
+    try:
+        with open(LOG_PATH, "a", encoding="utf-8") as log_file:
+            log_file.write(f"{description}\t{category}\n")
+    except Exception:
+        pass
+
+
 def predict_category(description: str):
     try:
         if not description or not str(description).strip():
@@ -42,6 +51,9 @@ def predict_category(description: str):
         best_index = int(probabilities.argmax())
         confidence = float(probabilities[best_index])
         category = str(_model.classes_[best_index]).strip()
+
+        if confidence < 0.6:
+            _log_low_confidence_prediction(str(description).strip(), category or "OTHER")
 
         if confidence < 0.5 or not category:
             return {"category": "OTHER", "confidence": confidence}

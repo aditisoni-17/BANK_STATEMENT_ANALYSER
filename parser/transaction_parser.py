@@ -1,7 +1,7 @@
 import re
 from typing import Dict, List, Optional
 
-from ml.category_predictor import predict_category
+from predict import predict_category
 from ocr.config import ACCOUNT_HOLDER
 
 DATE_PATTERN = re.compile(r"\b\d{2}/\d{2}/\d{4}\b")

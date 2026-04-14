@@ -1,7 +1,7 @@
 import pickle
+import csv
 from pathlib import Path
 
-import pandas as pd
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import accuracy_score
@@ -10,8 +10,8 @@ from ml.text_preprocessing import clean_transaction_text
 
 
 DATASET_PATH = "transactions_dataset.csv"
-MODEL_PATH = "transaction_category_model.pkl"
-VECTORIZER_PATH = "transaction_tfidf_vectorizer.pkl"
+MODEL_PATH = "model.pkl"
+VECTORIZER_PATH = "vectorizer.pkl"
 
 
 def main():
@@ -19,22 +19,45 @@ def main():
     if not dataset_path.exists():
         raise FileNotFoundError(f"{DATASET_PATH} not found")
 
-    df = pd.read_csv(dataset_path)
-    df = df.dropna(subset=["description", "category"])
-    df = df.drop_duplicates(subset=["description", "category"])
+    rows = []
+    seen = set()
 
-    if df.empty:
+    with dataset_path.open(newline="", encoding="utf-8") as csvfile:
+        reader = csv.DictReader(csvfile)
+        for row in reader:
+            description = clean_transaction_text(row.get("description", ""))
+            category = str(row.get("category", "")).strip()
+
+            if not description or not category:
+                continue
+
+            key = (description, category)
+            if key in seen:
+                continue
+
+            seen.add(key)
+            rows.append((description, category))
+
+    if len(rows) < 2:
         raise ValueError("Dataset is empty after cleaning")
 
-    descriptions = df["description"].astype(str).map(clean_transaction_text)
-    categories = df["category"].astype(str)
+    descriptions = [row[0] for row in rows]
+    categories = [row[1] for row in rows]
+
+    if len(set(categories)) < 2:
+        raise ValueError("Need at least two categories to train a classifier")
+
+    category_counts = {category: categories.count(category) for category in set(categories)}
+    stratify = categories if min(category_counts.values()) >= 2 else None
+
+    test_size = max(0.25, len(set(categories)) / len(rows))
 
     descriptions_train, descriptions_test, categories_train, categories_test = train_test_split(
         descriptions,
         categories,
-        test_size=0.2,
+        test_size=test_size,
         random_state=42,
-        stratify=categories if categories.nunique() > 1 else None,
+        stratify=stratify,
     )
 
     vectorizer = TfidfVectorizer(

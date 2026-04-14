@@ -6,6 +6,7 @@ from pathlib import Path
 MODEL_PATH = Path(__file__).with_name("model.pkl")
 VECTORIZER_PATH = Path(__file__).with_name("vectorizer.pkl")
 LOG_PATH = Path(__file__).with_name("misclassified.log")
+MIN_CONFIDENCE = 0.3
 
 _model = None
 _vectorizer = None
@@ -55,7 +56,7 @@ def predict_category(description: str):
         if confidence < 0.6:
             _log_low_confidence_prediction(str(description).strip(), category or "OTHER")
 
-        if confidence < 0.5 or not category:
+        if confidence < MIN_CONFIDENCE or not category:
             return {"category": "OTHER", "confidence": confidence}
 
         return {"category": category, "confidence": confidence}

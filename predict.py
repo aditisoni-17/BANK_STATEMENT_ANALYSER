@@ -29,10 +29,17 @@ def _load_artifacts():
 
 def predict_category(description: str) -> str:
     try:
+        if not description or not str(description).strip():
+            return "OTHER"
+
         _load_artifacts()
         cleaned_description = _clean_text(description)
+        if not cleaned_description:
+            return "OTHER"
+
         features = _vectorizer.transform([cleaned_description])
         prediction = _model.predict(features)
-        return str(prediction[0])
+        category = str(prediction[0]).strip()
+        return category or "OTHER"
     except Exception:
         return "OTHER"

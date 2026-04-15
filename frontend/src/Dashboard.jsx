@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import ExpenseChart from "./components/ExpenseChart";
 import InsightsSummary from "./components/InsightsSummary";
+import SummaryCards from "./components/SummaryCards";
 
 const STORAGE_KEY = "analysis";
 
@@ -106,22 +107,12 @@ export default function Dashboard() {
         </div>
       </header>
 
-      <div className="summary">
-        <div className="summary-card credit">
-          <span>Total Income</span>
-          <strong>{formatCurrency(totalIncome)}</strong>
-        </div>
-
-        <div className="summary-card debit">
-          <span>Total Expense</span>
-          <strong>{formatCurrency(totalExpense)}</strong>
-        </div>
-
-        <div className="summary-card net">
-          <span>Total Transactions</span>
-          <strong>{totalTransactions}</strong>
-        </div>
-      </div>
+      <SummaryCards
+        totalIncome={totalIncome}
+        totalExpense={totalExpense}
+        netSavings={totalIncome - totalExpense}
+        totalTransactions={totalTransactions}
+      />
 
       {insights && <InsightsSummary insights={insights} />}
 

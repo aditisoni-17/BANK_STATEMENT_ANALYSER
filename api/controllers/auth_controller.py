@@ -7,6 +7,7 @@ from fastapi.responses import JSONResponse
 from api.services.auth_service import (
     AuthError,
     clear_auth_cookie,
+    create_session,
     get_current_user,
     login_user,
     logout_user,

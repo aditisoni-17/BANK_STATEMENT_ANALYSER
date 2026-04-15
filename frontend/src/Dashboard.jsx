@@ -1,41 +1,13 @@
-import { useMemo, useState } from "react";
-import ExpenseChart from "./components/ExpenseChart";
-import InsightsSummary from "./components/InsightsSummary";
+import { useState } from "react";
+import ChartSection from "./components/ChartSection";
+import InsightBanner from "./components/InsightBanner";
+import InsightsPanel from "./components/InsightsPanel";
 import SummaryCards from "./components/SummaryCards";
+import TransactionsTable from "./components/TransactionsTable";
 
 const STORAGE_KEY = "analysis";
 
-function formatCurrency(value) {
-  return new Intl.NumberFormat("en-IN", {
-    style: "currency",
-    currency: "INR",
-    maximumFractionDigits: 2,
-  }).format(Number(value) || 0);
-}
-
-function formatConfidence(confidence) {
-  return `${Math.round((Number(confidence) || 0) * 100)}%`;
-}
-
-function normalizeBreakdown(categoryBreakdown) {
-  if (!categoryBreakdown) return [];
-
-  if (Array.isArray(categoryBreakdown)) {
-    return categoryBreakdown
-      .map((item) => ({
-        category: item.category || item.name || item.label || "Others",
-        amount: Number(item.amount ?? item.value ?? item.total ?? 0),
-      }))
-      .filter((item) => item.category);
-  }
-
-  return Object.entries(categoryBreakdown).map(([category, amount]) => ({
-    category,
-    amount: Number(amount) || 0,
-  }));
-}
-
-export default function Dashboard() {
+function Dashboard() {
   const [analysis] = useState(() => {
     try {
       const stored = localStorage.getItem(STORAGE_KEY);
@@ -49,20 +21,26 @@ export default function Dashboard() {
     ? analysis.transactions
     : [];
   const insights = analysis?.insights || null;
-  const categoryBreakdown = useMemo(
-    () => normalizeBreakdown(insights?.category_breakdown),
-    [insights]
-  );
 
   if (!analysis || transactions.length === 0) {
     return (
-      <div className="container">
-        <div style={{ padding: "48px 0" }}>
-          <p style={{ textTransform: "uppercase", letterSpacing: "0.08em", color: "#666" }}>
+      <div className="container" style={{ maxWidth: 1280, margin: "0 auto", padding: "32px 24px 56px" }}>
+        <div style={{ padding: "64px 0" }}>
+          <p
+            style={{
+              margin: 0,
+              textTransform: "uppercase",
+              letterSpacing: "0.12em",
+              color: "#64748b",
+              fontSize: 12,
+            }}
+          >
             Statement analysis
           </p>
-          <h1>No data available</h1>
-          <p>Upload a statement first so the dashboard can read the saved analysis from localStorage.</p>
+          <h1 style={{ margin: "10px 0 8px", fontSize: 36, color: "#0f172a" }}>No data available</h1>
+          <p style={{ margin: 0, color: "#64748b", maxWidth: 560, lineHeight: 1.6 }}>
+            Upload a statement first so the dashboard can read the saved analysis from localStorage.
+          </p>
         </div>
       </div>
     );
@@ -74,125 +52,121 @@ export default function Dashboard() {
     insights?.total_transactions || insights?.number_of_transactions || transactions.length
   );
 
-  const topCategory =
-    insights?.top_category ||
-    insights?.highest_category ||
-    categoryBreakdown[0]?.category ||
-    "N/A";
-
-  const maxBreakdownValue = Math.max(
-    0,
-    ...categoryBreakdown.map((item) => Number(item.amount) || 0)
-  );
-
   return (
-    <div className="container">
-      <header style={{ display: "flex", justifyContent: "space-between", gap: 16, alignItems: "flex-start" }}>
+    <main
+      className="container"
+      style={{
+        maxWidth: 1280,
+        margin: "0 auto",
+        padding: "32px 24px 56px",
+      }}
+    >
+      <header
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          gap: 20,
+          alignItems: "flex-start",
+          marginBottom: 24,
+        }}
+      >
         <div>
-          <p style={{ textTransform: "uppercase", letterSpacing: "0.08em", color: "#666", margin: 0 }}>
+          <p
+            style={{
+              margin: 0,
+              textTransform: "uppercase",
+              letterSpacing: "0.12em",
+              color: "#64748b",
+              fontSize: 12,
+              fontWeight: 600,
+            }}
+          >
             Statement analysis
           </p>
-          <h1>Dashboard</h1>
-          <p style={{ color: "#666" }}>Connected to live backend results from localStorage.</p>
+          <h1 style={{ margin: "10px 0 8px", fontSize: 38, lineHeight: 1.1, color: "#0f172a" }}>
+            Dashboard
+          </h1>
+          <p style={{ margin: 0, color: "#64748b", maxWidth: 640, lineHeight: 1.6 }}>
+            Connected to live backend results from localStorage.
+          </p>
         </div>
-        <div style={{ display: "flex", gap: 16, flexWrap: "wrap" }}>
+
+        <div
+          style={{
+            display: "grid",
+            gap: 12,
+            minWidth: 210,
+            padding: 18,
+            borderRadius: 20,
+            background: "#fff",
+            border: "1px solid #e2e8f0",
+            boxShadow: "0 12px 32px rgba(15, 23, 42, 0.06)",
+          }}
+        >
           <div>
-            <span style={{ display: "block", fontSize: 12, color: "#666" }}>Transactions</span>
-            <strong>{transactions.length}</strong>
+            <span style={{ display: "block", fontSize: 12, color: "#64748b" }}>Transactions</span>
+            <strong style={{ fontSize: 22, color: "#0f172a" }}>{transactions.length}</strong>
           </div>
           <div>
-            <span style={{ display: "block", fontSize: 12, color: "#666" }}>Top category</span>
-            <strong>{topCategory}</strong>
+            <span style={{ display: "block", fontSize: 12, color: "#64748b" }}>Top category</span>
+            <strong style={{ fontSize: 16, color: "#0f172a" }}>
+              {insights?.top_category ??
+                insights?.highest_category?.category ??
+                insights?.highestCategory ??
+                "N/A"}
+            </strong>
           </div>
         </div>
       </header>
 
-      <SummaryCards
-        totalIncome={totalIncome}
-        totalExpense={totalExpense}
-        netSavings={totalIncome - totalExpense}
-        totalTransactions={totalTransactions}
-      />
+      <div style={{ display: "grid", gap: 24 }}>
+        <InsightBanner insights={insights} />
 
-      {insights && <InsightsSummary insights={insights} />}
+        <SummaryCards
+          totalIncome={totalIncome}
+          totalExpense={totalExpense}
+          netSavings={totalIncome - totalExpense}
+          totalTransactions={totalTransactions}
+        />
 
-      <section style={{ display: "grid", gap: 24, gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))", marginTop: 24 }}>
-        <div>
-          <div style={{ marginBottom: 12 }}>
-            <p style={{ textTransform: "uppercase", letterSpacing: "0.08em", color: "#666", margin: 0 }}>Expense chart</p>
-            <h2>Category-wise expenses</h2>
-          </div>
-          <ExpenseChart transactions={transactions} />
-        </div>
+        <section
+          style={{
+            display: "grid",
+            gap: 24,
+            gridTemplateColumns: "minmax(0, 1.5fr) minmax(320px, 1fr)",
+            alignItems: "start",
+          }}
+        >
+          <ChartSection categoryBreakdown={insights?.category_breakdown} />
+          <InsightsPanel insights={insights} transactions={transactions} />
+        </section>
 
-        <div className="analytics">
-          <div style={{ marginBottom: 12 }}>
-            <p style={{ textTransform: "uppercase", letterSpacing: "0.08em", color: "#666", margin: 0 }}>Breakdown</p>
-            <h2>Insights</h2>
-          </div>
+        <section
+          style={{
+            display: "grid",
+            gap: 14,
+          }}
+        >
           <div>
-            {categoryBreakdown.length === 0 ? (
-              <p style={{ color: "#666" }}>No breakdown data available.</p>
-            ) : (
-              categoryBreakdown.map((item) => {
-                const width =
-                  maxBreakdownValue > 0
-                    ? Math.max(8, Math.round((item.amount / maxBreakdownValue) * 100))
-                    : 8;
-
-                return (
-                  <div key={item.category} style={{ marginBottom: 14 }}>
-                    <div style={{ display: "flex", justifyContent: "space-between", gap: 12, marginBottom: 8 }}>
-                      <span>{item.category}</span>
-                      <strong>{formatCurrency(item.amount)}</strong>
-                    </div>
-                    <div className="bar" style={{ height: 12 }}>
-                      <div
-                        style={{
-                          width: `${width}%`,
-                          height: "100%",
-                          background: "#111",
-                        }}
-                      />
-                    </div>
-                  </div>
-                );
-              })
-            )}
+            <p
+              style={{
+                margin: 0,
+                textTransform: "uppercase",
+                letterSpacing: "0.12em",
+                color: "#64748b",
+                fontSize: 12,
+                fontWeight: 600,
+              }}
+            >
+              Transactions
+            </p>
+            <h2 style={{ margin: "10px 0 0", fontSize: 24, color: "#0f172a" }}>Parsed transactions</h2>
           </div>
-        </div>
-      </section>
-
-      <section style={{ marginTop: 24 }}>
-        <div style={{ marginBottom: 12 }}>
-          <p style={{ textTransform: "uppercase", letterSpacing: "0.08em", color: "#666", margin: 0 }}>Transactions</p>
-          <h2>Parsed transactions</h2>
-        </div>
-        <table className="transactions-table">
-          <thead>
-            <tr>
-              <th>Date</th>
-              <th>Description</th>
-              <th>Amount</th>
-              <th>Category</th>
-              <th>Confidence</th>
-            </tr>
-          </thead>
-          <tbody>
-            {transactions.map((tx, index) => (
-              <tr key={`${tx.date}-${index}`}>
-                <td>{tx.date}</td>
-                <td>{tx.description}</td>
-                <td className={Number(tx.amount) < 0 ? "debit" : "credit"}>
-                  {formatCurrency(tx.amount)}
-                </td>
-                <td>{tx.category || "OTHER"}</td>
-                <td>{formatConfidence(tx.confidence)}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </section>
-    </div>
+          <TransactionsTable transactions={transactions} />
+        </section>
+      </div>
+    </main>
   );
 }
+
+export default Dashboard;

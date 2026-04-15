@@ -1,23 +1,37 @@
 import { useState } from "react";
+import { navigateTo } from "../router";
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
+const MAX_UPLOAD_BYTES = 5 * 1024 * 1024;
 
 function Upload({ onUploadSuccess }) {
   const [file, setFile] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [transactions, setTransactions] = useState(null);
+  const [status, setStatus] = useState("");
 
   const handleUpload = async () => {
     if (!file) {
       setError("Please select a PDF");
-      setTransactions(null);
+      setStatus("");
+      return;
+    }
+
+    if (file.type !== "application/pdf") {
+      setError("Please upload a valid PDF file");
+      setStatus("");
+      return;
+    }
+
+    if (file.size > MAX_UPLOAD_BYTES) {
+      setError("File size must be 5MB or less");
+      setStatus("");
       return;
     }
 
     setLoading(true);
     setError("");
-    setTransactions(null);
+    setStatus("");
 
     const formData = new FormData();
     formData.append("file", file);
@@ -25,6 +39,7 @@ function Upload({ onUploadSuccess }) {
     try {
       const response = await fetch(`${API_URL}/upload`, {
         method: "POST",
+        credentials: "include",
         body: formData,
       });
 
@@ -42,15 +57,18 @@ function Upload({ onUploadSuccess }) {
 
       const data = payload?.data || payload;
 
-      if (!data || !Array.isArray(data.transactions)) {
-        throw new Error("No parsed transaction data returned from the server");
+      if (!payload?.job_id && !data?.job_id) {
+        throw new Error("No job ID returned from the server");
       }
 
-      onUploadSuccess(data);
-      setTransactions(data.transactions);
+      localStorage.removeItem("analysis");
+      localStorage.setItem("analysisJobId", payload.job_id || data.job_id);
+      onUploadSuccess(payload);
+      setStatus("Upload queued for processing");
+      navigateTo("/processing");
     } catch (error) {
       setError(error.message || "Upload failed. Try again.");
-      setTransactions(null);
+      setStatus("");
     } finally {
       setLoading(false);
     }
@@ -65,23 +83,8 @@ function Upload({ onUploadSuccess }) {
       return <p className="error">Error: {error}</p>;
     }
 
-    if (transactions?.length === 0) {
-      return <p className="status-text">No transactions found</p>;
-    }
-
-    if (transactions?.length > 0) {
-      return (
-        <div className="status-text">
-          <p>Upload successful</p>
-          <ul>
-            {transactions.map((tx, index) => (
-              <li key={index}>
-                {tx.date} - {tx.description} - {tx.amount}
-              </li>
-            ))}
-          </ul>
-        </div>
-      );
+    if (status) {
+      return <p className="status-text">{status}</p>;
     }
 
     return null;
@@ -92,7 +95,7 @@ function Upload({ onUploadSuccess }) {
       <input
         type="file"
         accept="application/pdf"
-        onChange={(e) => setFile(e.target.files[0])}
+        onChange={(e) => setFile(e.target.files?.[0] || null)}
         disabled={loading}
       />
       {file && <p className="file-name">📄 {file.name}</p>}

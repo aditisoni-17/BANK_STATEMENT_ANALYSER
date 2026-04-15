@@ -3,8 +3,10 @@ import pickle
 from ml.text_preprocessing import clean_transaction_text
 
 
-MODEL_PATH = "transaction_category_model.pkl"
-VECTORIZER_PATH = "transaction_tfidf_vectorizer.pkl"
+MODEL_PATH = "model.pkl"
+VECTORIZER_PATH = "vectorizer.pkl"
+LEGACY_MODEL_PATH = "transaction_category_model.pkl"
+LEGACY_VECTORIZER_PATH = "transaction_tfidf_vectorizer.pkl"
 
 _model = None
 _vectorizer = None
@@ -18,12 +20,20 @@ def _load_artifacts():
     global _model, _vectorizer
 
     if _model is None:
-        with open(MODEL_PATH, "rb") as model_file:
-            _model = pickle.load(model_file)
+        try:
+            with open(MODEL_PATH, "rb") as model_file:
+                _model = pickle.load(model_file)
+        except FileNotFoundError:
+            with open(LEGACY_MODEL_PATH, "rb") as model_file:
+                _model = pickle.load(model_file)
 
     if _vectorizer is None:
-        with open(VECTORIZER_PATH, "rb") as vectorizer_file:
-            _vectorizer = pickle.load(vectorizer_file)
+        try:
+            with open(VECTORIZER_PATH, "rb") as vectorizer_file:
+                _vectorizer = pickle.load(vectorizer_file)
+        except FileNotFoundError:
+            with open(LEGACY_VECTORIZER_PATH, "rb") as vectorizer_file:
+                _vectorizer = pickle.load(vectorizer_file)
 
 
 def predict_category(description: str) -> str:

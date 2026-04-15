@@ -1,0 +1,1 @@
+from ml.insights_generator import generate_insights

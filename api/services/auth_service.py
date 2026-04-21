@@ -14,7 +14,29 @@ from fastapi import HTTPException, Request, Response, status
 AUTH_COOKIE_NAME = os.getenv("AUTH_COOKIE_NAME", "bsta_auth")
 AUTH_SECRET_KEY = os.getenv("AUTH_SECRET_KEY", "change-me-in-production")
 AUTH_TOKEN_TTL_SECONDS = int(os.getenv("AUTH_TOKEN_TTL_SECONDS", "86400"))
-AUTH_COOKIE_SECURE = os.getenv("AUTH_COOKIE_SECURE", "false").lower() == "true"
+
+
+def _resolve_cookie_settings():
+    environment = os.getenv("ENVIRONMENT", os.getenv("NODE_ENV", "")).lower()
+
+    same_site = os.getenv("AUTH_COOKIE_SAMESITE")
+    if same_site:
+        same_site = same_site.lower()
+    elif environment == "production":
+        same_site = "none"
+    else:
+        same_site = "lax"
+
+    secure = os.getenv("AUTH_COOKIE_SECURE")
+    if secure is None:
+        secure_enabled = environment == "production" or same_site == "none"
+    else:
+        secure_enabled = secure.lower() == "true"
+
+    return same_site, secure_enabled
+
+
+AUTH_COOKIE_SAMESITE, AUTH_COOKIE_SECURE = _resolve_cookie_settings()
 
 _users_by_email: Dict[str, Dict[str, str]] = {}
 _tokens_by_jti: Dict[str, Dict[str, str]] = {}
@@ -143,14 +165,19 @@ def set_auth_cookie(response: Response, token: str) -> None:
         value=token,
         httponly=True,
         secure=AUTH_COOKIE_SECURE,
-        samesite="lax",
+        samesite=AUTH_COOKIE_SAMESITE,
         max_age=AUTH_TOKEN_TTL_SECONDS,
         path="/",
     )
 
 
 def clear_auth_cookie(response: Response) -> None:
-    response.delete_cookie(key=AUTH_COOKIE_NAME, path="/")
+    response.delete_cookie(
+        key=AUTH_COOKIE_NAME,
+        path="/",
+        secure=AUTH_COOKIE_SECURE,
+        samesite=AUTH_COOKIE_SAMESITE,
+    )
 
 
 def signup_user(name: str, email: str, password: str) -> Dict[str, str]:

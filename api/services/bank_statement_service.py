@@ -1,6 +1,8 @@
 from pathlib import Path
 from typing import Dict
 
+from PIL import Image
+
 from ml.anomaly_detector import detect_anomalies
 from ml.insights_generator import generate_insights
 from ocr.clean_text import clean_text
@@ -15,13 +17,24 @@ class BankStatementProcessingError(Exception):
     pass
 
 
+def _load_input_images(path: Path):
+    suffix = path.suffix.lower()
+    image_extensions = {".png", ".jpg", ".jpeg", ".webp", ".bmp", ".tif", ".tiff"}
+
+    if suffix in image_extensions:
+        with Image.open(path) as image:
+            return [image.convert("RGB")]
+
+    return pdf_to_images(str(path))
+
+
 def process_bank_statement(pdf_path: str) -> Dict[str, object]:
     path = Path(pdf_path)
     if not path.exists():
-        raise BankStatementProcessingError("Uploaded PDF could not be found")
+        raise BankStatementProcessingError("Uploaded file could not be found")
 
     try:
-        images = pdf_to_images(str(path))
+        images = _load_input_images(path)
 
         raw_text_parts = []
         for image in images:

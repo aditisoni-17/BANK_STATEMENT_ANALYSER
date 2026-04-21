@@ -123,54 +123,204 @@ h2 {
   flex-wrap: wrap;
 }
 /* ===== Upload Section ===== */
-.upload-box {
-  margin: 20px 0;
-  padding: 15px;
-  background: #ffffff;
-  border-radius: 6px;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+.upload-shell {
+  padding: 24px 0;
 }
 
-.upload-box input {
-  margin-bottom: 10px;
+.upload-card {
+  max-width: 860px;
+  margin: 0 auto;
+  padding: 28px;
+  border-radius: 24px;
+  background: linear-gradient(180deg, #ffffff 0%, #fbfdff 100%);
+  border: 1px solid #dbe4ee;
+  box-shadow: 0 18px 48px rgba(15, 23, 42, 0.08);
 }
 
-.upload-box button {
-  padding: 8px 12px;
-  background-color: #1976d2;
-  color: #fff;
-  border: none;
-  border-radius: 4px;
+.upload-header {
+  margin-bottom: 20px;
+}
+
+.upload-eyebrow {
+  margin: 0 0 8px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #64748b;
+}
+
+.upload-header h2 {
+  margin: 0;
+  font-size: 28px;
+  color: #0f172a;
+}
+
+.upload-header p {
+  margin: 8px 0 0;
+  color: #64748b;
+  line-height: 1.6;
+}
+
+.upload-dropzone {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 38px 20px;
+  border: 2px dashed #cbd5e1;
+  border-radius: 22px;
+  background: #f8fafc;
+  cursor: pointer;
+  transition: all 180ms ease;
+}
+
+.upload-dropzone:hover {
+  border-color: #2563eb;
+  background: #eff6ff;
+}
+
+.upload-dropzone.drag-active {
+  border-color: #2563eb;
+  background: #eff6ff;
+  transform: translateY(-1px);
+}
+
+.upload-dropzone.is-disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.upload-input {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
   cursor: pointer;
 }
 
-.upload-box button:hover {
-  background-color: #115293;
+.upload-icon {
+  width: 64px;
+  height: 64px;
+  display: grid;
+  place-items: center;
+  border-radius: 20px;
+  background: #dbeafe;
+  color: #1d4ed8;
+  font-size: 26px;
+  font-weight: 700;
 }
 
-.upload-box button:disabled {
+.upload-title {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.upload-subtitle {
+  margin: 0;
+  color: #64748b;
+  font-size: 14px;
+}
+
+.upload-file-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-top: 16px;
+  padding: 16px 18px;
+  border-radius: 18px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+}
+
+.upload-file-name {
+  margin: 0;
+  font-weight: 700;
+  color: #0f172a;
+  word-break: break-word;
+}
+
+.upload-file-meta {
+  margin: 6px 0 0;
+  color: #64748b;
+  font-size: 13px;
+}
+
+.upload-clear-button {
+  border: none;
+  background: transparent;
+  color: #dc2626;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.upload-clear-button:disabled {
   opacity: 0.6;
   cursor: not-allowed;
 }
 
-.file-name {
-  margin: 8px 0;
-  font-size: 14px;
+.upload-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 18px;
+}
+
+.upload-primary-button {
+  padding: 12px 18px;
+  border: none;
+  border-radius: 14px;
+  background: linear-gradient(135deg, #2563eb, #1d4ed8);
+  color: #fff;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 12px 24px rgba(37, 99, 235, 0.18);
+  transition: transform 180ms ease, box-shadow 180ms ease, opacity 180ms ease;
+}
+
+.upload-primary-button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 16px 30px rgba(37, 99, 235, 0.22);
+}
+
+.upload-primary-button:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.upload-support {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 18px;
+}
+
+.upload-support span {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: #eef2ff;
+  color: #334155;
+  font-size: 12px;
+  font-weight: 700;
 }
 
 .status-text {
-  color: #555;
-  margin-top: 8px;
-}
-
-.success,
-.loading {
-  margin-top: 8px;
+  color: #475569;
+  margin-top: 12px;
 }
 
 .error {
-  color: red;
-  margin-top: 8px;
+  color: #dc2626;
+  margin-top: 12px;
+  font-weight: 600;
 }
 .analytics {
   margin: 30px 0;

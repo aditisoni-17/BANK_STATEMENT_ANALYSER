@@ -14,6 +14,8 @@ from fastapi import HTTPException, Request, Response, status
 AUTH_COOKIE_NAME = os.getenv("AUTH_COOKIE_NAME", "bsta_auth")
 AUTH_SECRET_KEY = os.getenv("AUTH_SECRET_KEY", "change-me-in-production")
 AUTH_TOKEN_TTL_SECONDS = int(os.getenv("AUTH_TOKEN_TTL_SECONDS", "86400"))
+CSRF_COOKIE_NAME = os.getenv("CSRF_COOKIE_NAME", "bsta_csrf")
+CSRF_HEADER_NAME = os.getenv("CSRF_HEADER_NAME", "X-CSRF-Token")
 
 
 def _resolve_cookie_settings():
@@ -37,6 +39,8 @@ def _resolve_cookie_settings():
 
 
 AUTH_COOKIE_SAMESITE, AUTH_COOKIE_SECURE = _resolve_cookie_settings()
+CSRF_COOKIE_SAMESITE = AUTH_COOKIE_SAMESITE
+CSRF_COOKIE_SECURE = AUTH_COOKIE_SECURE
 
 _users_by_email: Dict[str, Dict[str, str]] = {}
 _tokens_by_jti: Dict[str, Dict[str, str]] = {}
@@ -178,6 +182,42 @@ def clear_auth_cookie(response: Response) -> None:
         secure=AUTH_COOKIE_SECURE,
         samesite=AUTH_COOKIE_SAMESITE,
     )
+
+
+def set_csrf_cookie(response: Response, token: str) -> None:
+    response.set_cookie(
+        key=CSRF_COOKIE_NAME,
+        value=token,
+        httponly=True,
+        secure=CSRF_COOKIE_SECURE,
+        samesite=CSRF_COOKIE_SAMESITE,
+        max_age=AUTH_TOKEN_TTL_SECONDS,
+        path="/",
+    )
+
+
+def clear_csrf_cookie(response: Response) -> None:
+    response.delete_cookie(
+        key=CSRF_COOKIE_NAME,
+        path="/",
+        secure=CSRF_COOKIE_SECURE,
+        samesite=CSRF_COOKIE_SAMESITE,
+    )
+
+
+def issue_csrf_token() -> str:
+    return secrets.token_urlsafe(32)
+
+
+def validate_csrf_token(request: Request) -> None:
+    header_token = request.headers.get(CSRF_HEADER_NAME)
+    cookie_token = request.cookies.get(CSRF_COOKIE_NAME)
+
+    if not header_token or not cookie_token or header_token != cookie_token:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Invalid or missing CSRF token",
+        )
 
 
 def signup_user(name: str, email: str, password: str) -> Dict[str, str]:

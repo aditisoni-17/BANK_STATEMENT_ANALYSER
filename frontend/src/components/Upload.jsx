@@ -1,7 +1,6 @@
 import { useMemo, useRef, useState } from "react";
+import { apiRequest } from "../auth";
 import { navigateTo } from "../router";
-
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
 const MAX_UPLOAD_BYTES = 5 * 1024 * 1024;
 const ACCEPTED_EXTENSIONS = [".pdf", ".png", ".jpg", ".jpeg", ".webp", ".bmp", ".tif", ".tiff"];
 
@@ -91,23 +90,10 @@ function Upload({ onUploadSuccess }) {
     formData.append("file", file);
 
     try {
-      const response = await fetch(`${API_URL}/upload`, {
+      const payload = await apiRequest("/upload", {
         method: "POST",
-        credentials: "include",
         body: formData,
       });
-
-      const payload = await response.json().catch(() => null);
-
-      if (!response.ok) {
-        throw new Error(
-          payload?.message || payload?.detail || `Upload failed with status ${response.status}`
-        );
-      }
-
-      if (payload?.success === false) {
-        throw new Error(payload.message || "Upload failed");
-      }
 
       const jobId = payload?.job_id || payload?.data?.job_id;
       if (!jobId) {
@@ -120,6 +106,10 @@ function Upload({ onUploadSuccess }) {
       setStatus("Upload queued for processing");
       navigateTo("/processing");
     } catch (uploadError) {
+      if (uploadError?.status === 401) {
+        return;
+      }
+
       setError(uploadError.message || "Upload failed. Try again.");
       setStatus("");
     } finally {

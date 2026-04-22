@@ -6,13 +6,17 @@ from fastapi.responses import JSONResponse
 
 from api.services.auth_service import (
     AuthError,
+    clear_csrf_cookie,
     clear_auth_cookie,
     create_session,
     get_current_user,
     login_user,
     logout_user,
+    issue_csrf_token,
+    set_csrf_cookie,
     set_auth_cookie,
     signup_user,
+    validate_csrf_token,
 )
 
 
@@ -31,8 +35,15 @@ def _is_valid_email(value: str) -> bool:
     return bool(re.match(r"^[^\s@]+@[^\s@]+\.[^\s@]+$", value or ""))
 
 
-async def handle_signup(payload: SignupPayload, response: Response):
+async def handle_csrf(response: Response):
+    token = issue_csrf_token()
+    set_csrf_cookie(response, token)
+    return {"success": True, "csrf_token": token}
+
+
+async def handle_signup(payload: SignupPayload, request: Request, response: Response):
     try:
+        validate_csrf_token(request)
         if not _is_valid_email(payload.email):
             raise AuthError("Please enter a valid email")
         user = signup_user(payload.name, payload.email, payload.password)
@@ -43,10 +54,16 @@ async def handle_signup(payload: SignupPayload, response: Response):
             status_code=400,
             content={"success": False, "message": str(error)},
         )
+    except Exception as error:
+        return JSONResponse(
+            status_code=403,
+            content={"success": False, "message": str(error)},
+        )
 
 
-async def handle_login(payload: LoginPayload, response: Response):
+async def handle_login(payload: LoginPayload, request: Request, response: Response):
     try:
+        validate_csrf_token(request)
         if not _is_valid_email(payload.email):
             raise AuthError("Please enter a valid email")
         user = login_user(payload.email, payload.password)
@@ -56,6 +73,11 @@ async def handle_login(payload: LoginPayload, response: Response):
     except AuthError as error:
         return JSONResponse(
             status_code=401,
+            content={"success": False, "message": str(error)},
+        )
+    except Exception as error:
+        return JSONResponse(
+            status_code=403,
             content={"success": False, "message": str(error)},
         )
 
@@ -72,6 +94,8 @@ async def handle_me(request: Request):
 
 
 async def handle_logout(request: Request, response: Response):
+    validate_csrf_token(request)
     logout_user(request)
     clear_auth_cookie(response)
+    clear_csrf_cookie(response)
     return {"success": True}

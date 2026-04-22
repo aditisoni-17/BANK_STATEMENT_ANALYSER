@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
+import { apiRequest } from "./auth";
 import { navigateTo, useNavigate } from "./router";
 
 const STORAGE_KEY = "analysis";
 const JOB_KEY = "analysisJobId";
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
 const REDIRECT_DELAY_MS = 1200;
 const POLL_INTERVAL_MS = 1500;
 
@@ -38,29 +38,21 @@ function Processing() {
       }
 
       try {
-        const response = await fetch(`${API_URL}/jobs/${jobId}`, {
-          credentials: "include",
-        });
-
-        const payload = await response.json().catch(() => null);
-
-        if (!response.ok || payload?.success === false) {
-          throw new Error(
-            payload?.message || payload?.detail || `Polling failed with status ${response.status}`
-          );
-        }
-
-        const job = payload?.data || payload;
+        const job = await apiRequest(`/jobs/${jobId}`);
         const status = job?.status;
 
         if (status === "completed") {
-          const result = job?.result || job?.data || null;
-
-          if (!result || !Array.isArray(result.transactions)) {
+          if (!Array.isArray(job.transactions)) {
             throw new Error("Processing completed but no analysis data was returned");
           }
 
-          localStorage.setItem(STORAGE_KEY, JSON.stringify(result));
+          localStorage.setItem(
+            STORAGE_KEY,
+            JSON.stringify({
+              transactions: job.transactions || [],
+              insights: job.insights || {},
+            })
+          );
           localStorage.removeItem(JOB_KEY);
           setMessage("Analysis complete");
           setProgress(100);
@@ -76,6 +68,10 @@ function Processing() {
 
         setMessage("Analyzing your statement...");
       } catch (pollError) {
+        if (pollError?.status === 401) {
+          return;
+        }
+
         localStorage.removeItem(JOB_KEY);
         setError(pollError.message || "Unable to process the uploaded file");
         setProgress(100);

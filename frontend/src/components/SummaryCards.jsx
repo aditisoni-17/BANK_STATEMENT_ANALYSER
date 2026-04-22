@@ -1,3 +1,5 @@
+import { memo } from "react";
+
 function formatCurrency(value) {
   return new Intl.NumberFormat("en-IN", {
     style: "currency",
@@ -56,4 +58,4 @@ function SummaryCards({ totalIncome = 0, totalExpense = 0, netSavings = 0, total
   );
 }
 
-export default SummaryCards;
+export default memo(SummaryCards);

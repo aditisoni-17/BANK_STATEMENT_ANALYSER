@@ -1,3 +1,5 @@
+import { memo } from "react";
+
 function formatCurrency(value) {
   return new Intl.NumberFormat("en-IN", {
     style: "currency",
@@ -105,4 +107,4 @@ function TransactionsTable({ transactions = [] }) {
   );
 }
 
-export default TransactionsTable;
+export default memo(TransactionsTable);

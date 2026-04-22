@@ -1,3 +1,5 @@
+import { memo } from "react";
+
 function formatCurrency(value) {
   return new Intl.NumberFormat("en-IN", {
     style: "currency",
@@ -70,4 +72,4 @@ function InsightBanner({ insights }) {
   );
 }
 
-export default InsightBanner;
+export default memo(InsightBanner);

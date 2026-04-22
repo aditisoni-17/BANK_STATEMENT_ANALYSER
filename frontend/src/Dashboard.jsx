@@ -1,6 +1,5 @@
-import { useEffect, useMemo, useState } from "react";
+import { lazy, Suspense, useEffect, useMemo, useState } from "react";
 import { apiRequest } from "./auth";
-import ChartSection from "./components/ChartSection";
 import InsightBanner from "./components/InsightBanner";
 import InsightsPanel from "./components/InsightsPanel";
 import SummaryCards from "./components/SummaryCards";
@@ -9,6 +8,7 @@ import { navigateTo } from "./router";
 
 const JOB_KEY = "analysisJobId";
 const POLL_INTERVAL_MS = 1500;
+const ChartSection = lazy(() => import("./components/ChartSection"));
 
 function normalizeAnalysisPayload(payload) {
   if (!payload) {
@@ -347,7 +347,19 @@ function Dashboard() {
         />
 
         <section className="grid gap-8 lg:grid-cols-[minmax(0,1.35fr)_minmax(320px,1fr)]">
-          <ChartSection categoryBreakdown={categoryBreakdown} />
+          <Suspense
+            fallback={
+              <div className="rounded-[24px] border border-slate-200 bg-white p-6 shadow-sm">
+                <div className="mb-4 h-4 w-32 rounded-full bg-slate-200" />
+                <div className="grid gap-4 xl:grid-cols-2">
+                  <div className="h-[300px] rounded-[20px] bg-slate-100" />
+                  <div className="h-[300px] rounded-[20px] bg-slate-100" />
+                </div>
+              </div>
+            }
+          >
+            <ChartSection categoryBreakdown={categoryBreakdown} />
+          </Suspense>
           <InsightsPanel insights={insights} transactions={transactions} />
         </section>
 

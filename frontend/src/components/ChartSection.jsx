@@ -1,3 +1,4 @@
+import { memo } from "react";
 import {
   Bar,
   BarChart,
@@ -143,4 +144,4 @@ function ChartSection({ categoryBreakdown }) {
   );
 }
 
-export default ChartSection;
+export default memo(ChartSection);

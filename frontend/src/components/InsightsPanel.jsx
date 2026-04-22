@@ -20,8 +20,12 @@ function getTopCategory(insights) {
   return topCategory?.category || topCategory?.name || "OTHER";
 }
 
-function getUnusualTransaction(transactions = []) {
-  return transactions.find((transaction) => transaction?.anomaly) || null;
+function getUnusualTransactions(insights, transactions = []) {
+  if (Array.isArray(insights?.unusual_transactions) && insights.unusual_transactions.length > 0) {
+    return insights.unusual_transactions;
+  }
+
+  return transactions.filter((transaction) => transaction?.anomaly);
 }
 
 function InsightsPanel({ insights, transactions = [] }) {
@@ -29,31 +33,39 @@ function InsightsPanel({ insights, transactions = [] }) {
     return null;
   }
 
-  const unusual = getUnusualTransaction(transactions);
+  const unusualTransactions = getUnusualTransactions(insights, transactions);
   const topCategory = getTopCategory(insights);
   const savings =
     insights.savings ??
     Math.max((insights.total_income || 0) - (insights.total_expense || 0), 0);
 
-  const rows = [
-    {
-      tone: "warning",
-      label: `You spent most on ${String(topCategory).toUpperCase()}`,
-      value: `Total expense ${formatCurrency(insights.total_expense || 0)}`,
-    },
-    {
-      tone: "warning",
-      label: unusual
-        ? `Unusual transaction detected ${formatCurrency(unusual.amount)}`
-        : "Unusual transaction detected",
-      value: unusual?.description || "No anomaly flagged",
-    },
-    {
-      tone: "info",
-      label: `You can save ${formatCurrency(savings)}`,
-      value: "Based on current income vs expense pattern",
-    },
-  ];
+  const humanInsights = Array.isArray(insights.human_insights) ? insights.human_insights : [];
+
+  const cards = humanInsights.length
+    ? humanInsights.slice(0, 3).map((text) => ({
+        tone: /unusual|warning|detected/i.test(text) ? "warning" : "info",
+        label: text,
+        value: "",
+      }))
+    : [
+        {
+          tone: "warning",
+          label: `You spent most on ${String(topCategory).toUpperCase()}`,
+          value: `Total expense ${formatCurrency(insights.total_expense || 0)}`,
+        },
+        {
+          tone: "warning",
+          label: unusualTransactions.length
+            ? `Unusual transaction detected ${formatCurrency(unusualTransactions[0].amount)}`
+            : "Unusual transaction detected",
+          value: unusualTransactions[0]?.description || "No anomaly flagged",
+        },
+        {
+          tone: "info",
+          label: `You can save ${formatCurrency(savings)}`,
+          value: "Based on current income vs expense pattern",
+        },
+      ];
 
   return (
     <section
@@ -62,9 +74,9 @@ function InsightsPanel({ insights, transactions = [] }) {
         gap: 14,
       }}
     >
-      {rows.map((row) => (
+      {cards.slice(0, 3).map((row, index) => (
         <article
-          key={row.label}
+          key={`${row.label}-${index}`}
           style={{
             display: "flex",
             gap: 16,
@@ -95,7 +107,10 @@ function InsightsPanel({ insights, transactions = [] }) {
               borderRadius: 9999,
               marginTop: 6,
               background: row.tone === "warning" ? "#f59e0b" : "#3b82f6",
-              boxShadow: row.tone === "warning" ? "0 0 0 6px rgba(245, 158, 11, 0.12)" : "0 0 0 6px rgba(59, 130, 246, 0.12)",
+              boxShadow:
+                row.tone === "warning"
+                  ? "0 0 0 6px rgba(245, 158, 11, 0.12)"
+                  : "0 0 0 6px rgba(59, 130, 246, 0.12)",
             }}
           />
 
@@ -110,7 +125,9 @@ function InsightsPanel({ insights, transactions = [] }) {
             >
               {row.label}
             </p>
-            <p style={{ margin: "6px 0 0", fontSize: 13, color: "#64748b" }}>{row.value}</p>
+            {row.value ? (
+              <p style={{ margin: "6px 0 0", fontSize: 13, color: "#64748b" }}>{row.value}</p>
+            ) : null}
           </div>
         </article>
       ))}

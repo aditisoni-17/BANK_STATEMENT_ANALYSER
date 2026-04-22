@@ -14,6 +14,9 @@ function InsightBanner({ insights }) {
   const totalExpense =
     insights.total_expense ?? insights.totalExpense ?? insights.monthly_expense ?? 0;
 
+  const humanSummary =
+    insights.human_summary || `You spent ${formatCurrency(totalExpense)} this month`;
+
   const topCategory =
     insights.top_category ??
     insights.highest_category?.category ??
@@ -72,6 +75,9 @@ function InsightBanner({ insights }) {
             </span>{" "}
             this month
           </h2>
+          <p style={{ margin: "10px 0 0", color: "rgba(255,255,255,0.82)", fontSize: 14 }}>
+            {humanSummary}
+          </p>
         </div>
 
         <div

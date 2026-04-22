@@ -100,7 +100,6 @@ function Upload({ onUploadSuccess }) {
         throw new Error("No job ID returned from the server");
       }
 
-      localStorage.removeItem("analysis");
       localStorage.setItem("analysisJobId", jobId);
       onUploadSuccess?.(payload);
       setStatus("Upload queued for processing");

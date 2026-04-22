@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import { apiRequest } from "./auth";
 import { navigateTo, useNavigate } from "./router";
 
-const STORAGE_KEY = "analysis";
 const JOB_KEY = "analysisJobId";
 const REDIRECT_DELAY_MS = 1200;
 const POLL_INTERVAL_MS = 1500;
@@ -42,18 +41,6 @@ function Processing() {
         const status = job?.status;
 
         if (status === "completed") {
-          if (!Array.isArray(job.transactions)) {
-            throw new Error("Processing completed but no analysis data was returned");
-          }
-
-          localStorage.setItem(
-            STORAGE_KEY,
-            JSON.stringify({
-              transactions: job.transactions || [],
-              insights: job.insights || {},
-            })
-          );
-          localStorage.removeItem(JOB_KEY);
           setMessage("Analysis complete");
           setProgress(100);
           window.clearInterval(pollTimer);
@@ -62,8 +49,12 @@ function Processing() {
         }
 
         if (status === "failed") {
-          localStorage.removeItem(JOB_KEY);
-          throw new Error(job?.error || "Processing failed");
+          setMessage("Processing failed");
+          setError(job?.error || "Processing failed");
+          setProgress(100);
+          window.clearInterval(pollTimer);
+          clearJobAndRedirect("/dashboard", 1200);
+          return;
         }
 
         setMessage("Analyzing your statement...");

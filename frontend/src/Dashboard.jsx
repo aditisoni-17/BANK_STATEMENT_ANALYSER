@@ -1,13 +1,13 @@
 import { useEffect, useMemo, useState } from "react";
+import { apiRequest } from "./auth";
 import ChartSection from "./components/ChartSection";
 import InsightBanner from "./components/InsightBanner";
 import InsightsPanel from "./components/InsightsPanel";
 import SummaryCards from "./components/SummaryCards";
 import TransactionsTable from "./components/TransactionsTable";
+import { navigateTo } from "./router";
 
-const STORAGE_KEY = "analysis";
 const JOB_KEY = "analysisJobId";
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
 const POLL_INTERVAL_MS = 1500;
 
 function normalizeAnalysisPayload(payload) {
@@ -21,89 +21,83 @@ function normalizeAnalysisPayload(payload) {
   }
 
   return {
-    raw_text: data.raw_text || "",
-    cleaned_text: data.cleaned_text || "",
     transactions: Array.isArray(data.transactions) ? data.transactions : [],
     insights: data.insights || null,
   };
 }
 
-function getStoredAnalysis() {
+function getJobId() {
   try {
-    const stored = localStorage.getItem(STORAGE_KEY);
-    return stored ? JSON.parse(stored) : null;
+    return localStorage.getItem(JOB_KEY) || "";
   } catch {
-    return null;
+    return "";
   }
 }
 
 function Dashboard() {
-  const hasPendingJob = Boolean(localStorage.getItem(JOB_KEY));
-  const [analysis, setAnalysis] = useState(() => getStoredAnalysis());
-  const [loading, setLoading] = useState(hasPendingJob);
+  const [jobId] = useState(() => getJobId());
+  const [analysis, setAnalysis] = useState(null);
+  const [loading, setLoading] = useState(Boolean(jobId));
   const [error, setError] = useState("");
+  const [retryToken, setRetryToken] = useState(0);
+  const [jobStatus, setJobStatus] = useState("idle");
 
   useEffect(() => {
-    const jobId = localStorage.getItem(JOB_KEY);
-
     if (!jobId) {
-      const stored = getStoredAnalysis();
-      if (stored) {
-        setAnalysis(stored);
-      }
+      setAnalysis(null);
       setLoading(false);
+      setJobStatus("idle");
       return undefined;
     }
 
     let cancelled = false;
     let pollTimer = null;
 
-    const persistAnalysis = (nextAnalysis) => {
-      setAnalysis(nextAnalysis);
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(nextAnalysis));
-    };
-
     const fetchJob = async () => {
       try {
-        const response = await fetch(`${API_URL}/jobs/${jobId}`, {
-          credentials: "include",
+        const payload = await apiRequest(`/jobs/${jobId}`, {
         });
-        const payload = await response.json().catch(() => null);
+        const job = payload?.data || payload;
+        const status = job?.status || "unknown";
 
-        if (!response.ok || payload?.success === false) {
-          throw new Error(
-            payload?.message || payload?.detail || `Request failed with status ${response.status}`
-          );
+        if (cancelled) {
+          return;
         }
 
-        const job = payload?.data || payload;
+        setJobStatus(status);
 
-        if (job?.status === "completed") {
-          const nextAnalysis = normalizeAnalysisPayload(job.result || job.data || job);
+        if (status === "completed") {
+          const nextAnalysis = normalizeAnalysisPayload(job.result || job);
 
           if (!nextAnalysis || nextAnalysis.transactions.length === 0) {
             throw new Error("Completed job did not return parsed analysis data");
           }
 
-          persistAnalysis(nextAnalysis);
-          localStorage.removeItem(JOB_KEY);
+          setAnalysis(nextAnalysis);
           setLoading(false);
           setError("");
           window.clearInterval(pollTimer);
           return;
         }
 
-        if (job?.status === "failed") {
-          localStorage.removeItem(JOB_KEY);
+        if (status === "failed") {
+          setAnalysis(null);
           setLoading(false);
-          throw new Error(job?.error || "Processing failed");
+          setError(job?.error || "Processing failed");
+          window.clearInterval(pollTimer);
+          return;
         }
 
         setLoading(true);
         setError("");
       } catch (jobError) {
+        if (jobError?.status === 401) {
+          return;
+        }
+
         if (!cancelled) {
           setLoading(false);
+          setAnalysis(null);
           setError(jobError.message || "Failed to load dashboard data");
         }
         window.clearInterval(pollTimer);
@@ -117,12 +111,11 @@ function Dashboard() {
       cancelled = true;
       window.clearInterval(pollTimer);
     };
-  }, []);
+  }, [jobId, retryToken]);
 
-  const transactions = Array.isArray(analysis?.transactions)
-    ? analysis.transactions
-    : [];
+  const transactions = Array.isArray(analysis?.transactions) ? analysis.transactions : [];
   const insights = analysis?.insights || null;
+
   const categoryBreakdown = useMemo(() => {
     const breakdown = insights?.category_breakdown;
 
@@ -151,7 +144,61 @@ function Dashboard() {
     insights?.total_transactions || insights?.number_of_transactions || transactions.length
   );
 
-  if (loading && hasPendingJob) {
+  const handleRetry = () => {
+    setError("");
+    setLoading(Boolean(jobId));
+    setRetryToken((value) => value + 1);
+  };
+
+  if (!jobId) {
+    return (
+      <main
+        className="container"
+        style={{
+          maxWidth: 1280,
+          margin: "0 auto",
+          padding: "32px 24px 56px",
+        }}
+      >
+        <div style={{ padding: "64px 0" }}>
+          <p
+            style={{
+              margin: 0,
+              textTransform: "uppercase",
+              letterSpacing: "0.12em",
+              color: "#64748b",
+              fontSize: 12,
+              fontWeight: 600,
+            }}
+          >
+            Statement analysis
+          </p>
+          <h1 style={{ margin: "10px 0 8px", fontSize: 36, color: "#0f172a" }}>No analysis found</h1>
+          <p style={{ margin: 0, color: "#64748b", maxWidth: 560, lineHeight: 1.6 }}>
+            Upload a statement first so the dashboard can fetch results from the backend.
+          </p>
+          <button
+            type="button"
+            onClick={() => navigateTo("/upload")}
+            style={{
+              marginTop: 20,
+              border: "none",
+              borderRadius: 14,
+              padding: "12px 18px",
+              background: "#0f172a",
+              color: "#fff",
+              fontWeight: 600,
+              cursor: "pointer",
+            }}
+          >
+            Go to upload
+          </button>
+        </div>
+      </main>
+    );
+  }
+
+  if (loading && !analysis) {
     return (
       <main
         className="container"
@@ -190,7 +237,7 @@ function Dashboard() {
     );
   }
 
-  if (error && hasPendingJob) {
+  if (error) {
     return (
       <main
         className="container"
@@ -224,6 +271,38 @@ function Dashboard() {
           <p style={{ margin: 0, color: "#64748b", maxWidth: 560, lineHeight: 1.6 }}>
             {error}
           </p>
+          <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
+            <button
+              type="button"
+              onClick={handleRetry}
+              style={{
+                border: "none",
+                borderRadius: 14,
+                padding: "12px 18px",
+                background: "#0f172a",
+                color: "#fff",
+                fontWeight: 600,
+                cursor: "pointer",
+              }}
+            >
+              Retry
+            </button>
+            <button
+              type="button"
+              onClick={() => navigateTo("/upload")}
+              style={{
+                border: "1px solid #cbd5e1",
+                borderRadius: 14,
+                padding: "12px 18px",
+                background: "#fff",
+                color: "#0f172a",
+                fontWeight: 600,
+                cursor: "pointer",
+              }}
+            >
+              Upload again
+            </button>
+          </div>
         </div>
       </main>
     );
@@ -254,8 +333,24 @@ function Dashboard() {
           </p>
           <h1 style={{ margin: "10px 0 8px", fontSize: 36, color: "#0f172a" }}>No data available</h1>
           <p style={{ margin: 0, color: "#64748b", maxWidth: 560, lineHeight: 1.6 }}>
-            Upload a statement first so the dashboard can read the saved analysis from the backend.
+            We could not find a finished analysis for this job yet.
           </p>
+          <button
+            type="button"
+            onClick={handleRetry}
+            style={{
+              marginTop: 20,
+              border: "none",
+              borderRadius: 14,
+              padding: "12px 18px",
+              background: "#0f172a",
+              color: "#fff",
+              fontWeight: 600,
+              cursor: "pointer",
+            }}
+          >
+            Retry
+          </button>
         </div>
       </main>
     );
@@ -297,6 +392,9 @@ function Dashboard() {
           </h1>
           <p style={{ margin: 0, color: "#64748b", maxWidth: 640, lineHeight: 1.6 }}>
             Connected to live backend results from the processing job.
+          </p>
+          <p style={{ margin: "8px 0 0", color: "#94a3b8", fontSize: 12 }}>
+            Job status: {jobStatus}
           </p>
         </div>
 

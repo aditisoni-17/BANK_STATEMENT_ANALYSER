@@ -11,6 +11,7 @@ function Processing() {
   const [progress, setProgress] = useState(0);
   const [message, setMessage] = useState("Analyzing your statement...");
   const [error, setError] = useState("");
+  const [terminalState, setTerminalState] = useState(false);
 
   useEffect(() => {
     const jobId = localStorage.getItem(JOB_KEY);
@@ -43,6 +44,7 @@ function Processing() {
         if (status === "completed") {
           setMessage("Analysis complete");
           setProgress(100);
+          setTerminalState(false);
           window.clearInterval(pollTimer);
           clearJobAndRedirect("/dashboard", 900);
           return;
@@ -52,8 +54,8 @@ function Processing() {
           setMessage("Processing failed");
           setError(job?.error || "Processing failed");
           setProgress(100);
+          setTerminalState(true);
           window.clearInterval(pollTimer);
-          clearJobAndRedirect("/dashboard", 1200);
           return;
         }
 
@@ -65,9 +67,9 @@ function Processing() {
 
         localStorage.removeItem(JOB_KEY);
         setError(pollError.message || "Unable to process the uploaded file");
+        setTerminalState(true);
         setProgress(100);
         window.clearInterval(pollTimer);
-        clearJobAndRedirect("/upload", 1200);
       }
     };
 
@@ -89,6 +91,57 @@ function Processing() {
       }
     };
   }, [navigate]);
+
+  const retryProcessing = () => {
+    setError("");
+    setTerminalState(false);
+    setMessage("Analyzing your statement...");
+    setProgress(0);
+    localStorage.removeItem(JOB_KEY);
+    navigateTo("/upload");
+  };
+
+  if (terminalState && error) {
+    return (
+      <div
+        style={{
+          minHeight: "100vh",
+          background: "#f8fafc",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          padding: 24,
+        }}
+      >
+        <div className="w-full max-w-2xl rounded-[28px] border border-rose-200 bg-white p-8 shadow-[0_20px_50px_rgba(15,23,42,0.08)] sm:p-10">
+          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-rose-600">
+            Processing error
+          </p>
+          <h2 className="mt-3 text-3xl font-semibold tracking-tight text-slate-950">
+            We could not finish analyzing your statement
+          </h2>
+          <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-600 sm:text-base">{error}</p>
+
+          <div className="mt-6 flex flex-wrap gap-3">
+            <button
+              type="button"
+              onClick={retryProcessing}
+              className="inline-flex items-center rounded-xl bg-slate-950 px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-slate-800"
+            >
+              Retry processing
+            </button>
+            <button
+              type="button"
+              onClick={() => navigateTo("/upload")}
+              className="inline-flex items-center rounded-xl border border-slate-200 bg-white px-5 py-3 text-sm font-semibold text-slate-900 shadow-sm transition hover:-translate-y-0.5 hover:border-slate-300 hover:bg-slate-50"
+            >
+              Upload another file
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div

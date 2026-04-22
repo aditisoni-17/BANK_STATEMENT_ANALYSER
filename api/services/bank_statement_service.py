@@ -85,6 +85,23 @@ def _fallback_insights(transactions):
     }
 
 
+def _build_empty_result(message: str, raw_text: str = "", cleaned_text: str = "") -> Dict[str, object]:
+    insights = _fallback_insights([])
+    insights["human_summary"] = message
+    insights["human_insights"] = [message]
+    insights["summary_text"] = message
+    insights["spending_pattern"]["summary"] = "No spending pattern available"
+
+    return {
+        "raw_text": raw_text,
+        "cleaned_text": cleaned_text,
+        "transactions": [],
+        "summary": calculate_summary([]),
+        "insights": insights,
+        "message": message,
+    }
+
+
 def process_bank_statement(pdf_path: str) -> Dict[str, object]:
     path = Path(pdf_path)
     if not path.exists():
@@ -99,6 +116,14 @@ def process_bank_statement(pdf_path: str) -> Dict[str, object]:
 
         raw_text = "\n".join(part for part in raw_text_parts if part)
         cleaned_text = clean_text(raw_text)
+
+        if not raw_text.strip():
+            return _build_empty_result(
+                "No readable text was extracted from the uploaded statement.",
+                raw_text=raw_text,
+                cleaned_text=cleaned_text,
+            )
+
         try:
             transactions = parse_transactions(cleaned_text)
         except Exception as error:
@@ -108,6 +133,13 @@ def process_bank_statement(pdf_path: str) -> Dict[str, object]:
             transactions = detect_anomalies(transactions)
         except Exception as error:
             raise BankStatementProcessingError(f"Anomaly detection failed: {error}") from error
+
+        if not transactions:
+            return _build_empty_result(
+                "No transactions were detected in the uploaded statement.",
+                raw_text=raw_text,
+                cleaned_text=cleaned_text,
+            )
 
         try:
             insights = generate_insights(transactions)

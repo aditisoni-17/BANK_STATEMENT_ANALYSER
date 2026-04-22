@@ -26,6 +26,7 @@ def create_job(user_id: str, filename: str, request_id: str) -> str:
             "insights": {},
             "result": None,
             "error": None,
+            "message": None,
             "created_at": now,
             "updated_at": now,
         }
@@ -56,6 +57,7 @@ def build_job_response(job: Dict[str, object]) -> Dict[str, object]:
         "transactions": job.get("transactions") or [],
         "insights": job.get("insights") or {},
         "error": job.get("error"),
+        "message": job.get("message") or (job.get("result") or {}).get("message"),
     }
 
 
@@ -75,10 +77,11 @@ def process_job(job_id: str, pdf_path: str) -> None:
             insights=result.get("insights", {}),
             result=result,
             error=None,
+            message=result.get("message"),
         )
         log_event("job_completed", request_id=request_id, job_id=job_id, status="completed")
     except BankStatementProcessingError as error:
-        _update_job(job_id, status="failed", error=str(error), transactions=[], insights={}, result=None)
+        _update_job(job_id, status="failed", error=str(error), transactions=[], insights={}, result=None, message=None)
         log_event("job_failed", request_id=request_id, job_id=job_id, status="failed", error=str(error))
     except Exception as error:
         _update_job(
@@ -88,6 +91,7 @@ def process_job(job_id: str, pdf_path: str) -> None:
             transactions=[],
             insights={},
             result=None,
+            message=None,
         )
         log_event(
             "job_failed",

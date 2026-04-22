@@ -231,7 +231,7 @@ function Dashboard() {
     );
   }
 
-  if (!analysis || transactions.length === 0) {
+  if (!analysis) {
     return (
       <main className={pageShell}>
         <div className="rounded-[28px] border border-slate-200 bg-white p-8 shadow-[0_24px_60px_rgba(15,23,42,0.06)] sm:p-10">
@@ -251,6 +251,44 @@ function Dashboard() {
           >
             Retry
           </button>
+        </div>
+      </main>
+    );
+  }
+
+  if (transactions.length === 0) {
+    return (
+      <main className={pageShell}>
+        <div className="grid gap-6 rounded-[28px] border border-slate-200 bg-white p-8 shadow-[0_24px_60px_rgba(15,23,42,0.06)] sm:p-10">
+          <div className="grid gap-3">
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
+              Statement analysis
+            </p>
+            <h1 className="text-3xl font-semibold tracking-tight text-slate-950 sm:text-4xl">
+              No transactions detected
+            </h1>
+            <p className="max-w-2xl text-sm leading-6 text-slate-600 sm:text-base">
+              {insights?.human_summary ||
+                "The uploaded statement was processed successfully, but no transactions could be extracted."}
+            </p>
+          </div>
+
+          <div className="flex flex-wrap gap-3">
+            <button
+              type="button"
+              onClick={handleRetry}
+              className="inline-flex items-center rounded-xl bg-slate-950 px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-slate-800"
+            >
+              Retry processing
+            </button>
+            <button
+              type="button"
+              onClick={() => navigateTo("/upload")}
+              className="inline-flex items-center rounded-xl border border-slate-200 bg-white px-5 py-3 text-sm font-semibold text-slate-900 shadow-sm transition hover:-translate-y-0.5 hover:border-slate-300 hover:bg-slate-50"
+            >
+              Upload another file
+            </button>
+          </div>
         </div>
       </main>
     );

@@ -62,98 +62,83 @@ function ChartSection({ categoryBreakdown }) {
 
   if (data.length === 0) {
     return (
-      <div
-        style={{
-          borderRadius: 24,
-          border: "1px solid #e2e8f0",
-          background: "#fff",
-          padding: 24,
-          color: "#64748b",
-        }}
-      >
+      <div className="rounded-[24px] border border-slate-200 bg-white p-6 text-sm text-slate-500 shadow-sm">
         No category breakdown data available.
       </div>
     );
   }
 
   return (
-    <section
-      style={{
-        display: "grid",
-        gap: 24,
-        gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))",
-        alignItems: "stretch",
-      }}
-    >
-      <div
-        style={{
-          borderRadius: 24,
-          border: "1px solid #e2e8f0",
-          background: "#fff",
-          padding: 20,
-          boxShadow: "0 8px 24px rgba(15, 23, 42, 0.06)",
-          minHeight: 360,
-        }}
-      >
-        <div style={{ marginBottom: 16 }}>
-          <p style={{ margin: 0, color: "#64748b", textTransform: "uppercase", letterSpacing: "0.08em", fontSize: 12 }}>
-            Distribution
-          </p>
-          <h3 style={{ margin: "6px 0 0", fontSize: 18, color: "#0f172a" }}>Donut chart</h3>
+    <section className="grid gap-6 xl:grid-cols-2">
+      <article className="rounded-[24px] border border-slate-200 bg-white p-5 shadow-[0_10px_30px_rgba(15,23,42,0.06)]">
+        <div className="mb-4 flex items-start justify-between gap-4">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
+              Category share
+            </p>
+            <h3 className="mt-2 text-lg font-semibold tracking-tight text-slate-950">
+              Donut chart
+            </h3>
+          </div>
+          <span className="rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700 ring-1 ring-emerald-100">
+            Expense mix
+          </span>
         </div>
 
-        <ResponsiveContainer width="100%" height={280}>
-          <PieChart>
-            <Pie
-              data={data}
-              dataKey="amount"
-              nameKey="category"
-              innerRadius={72}
-              outerRadius={108}
-              paddingAngle={3}
-            >
-              {data.map((entry, index) => (
-                <Cell key={entry.category} fill={getColor(index)} />
-              ))}
-            </Pie>
-            <Tooltip formatter={(value) => formatCurrency(value)} />
-            <Legend />
-          </PieChart>
-        </ResponsiveContainer>
-      </div>
+        <div className="h-[300px]">
+          <ResponsiveContainer width="100%" height="100%">
+            <PieChart>
+              <Pie
+                data={data}
+                dataKey="amount"
+                nameKey="category"
+                innerRadius={74}
+                outerRadius={112}
+                paddingAngle={3}
+              >
+                {data.map((entry, index) => (
+                  <Cell key={entry.category} fill={getColor(index)} />
+                ))}
+              </Pie>
+              <Tooltip formatter={(value) => formatCurrency(value)} />
+              <Legend />
+            </PieChart>
+          </ResponsiveContainer>
+        </div>
+      </article>
 
-      <div
-        style={{
-          borderRadius: 24,
-          border: "1px solid #e2e8f0",
-          background: "#fff",
-          padding: 20,
-          boxShadow: "0 8px 24px rgba(15, 23, 42, 0.06)",
-          minHeight: 360,
-        }}
-      >
-        <div style={{ marginBottom: 16 }}>
-          <p style={{ margin: 0, color: "#64748b", textTransform: "uppercase", letterSpacing: "0.08em", fontSize: 12 }}>
-            Comparison
-          </p>
-          <h3 style={{ margin: "6px 0 0", fontSize: 18, color: "#0f172a" }}>Expenses by category</h3>
+      <article className="rounded-[24px] border border-slate-200 bg-white p-5 shadow-[0_10px_30px_rgba(15,23,42,0.06)]">
+        <div className="mb-4 flex items-start justify-between gap-4">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
+              Spending trend
+            </p>
+            <h3 className="mt-2 text-lg font-semibold tracking-tight text-slate-950">
+              Expenses by category
+            </h3>
+          </div>
+          <span className="rounded-full bg-sky-50 px-3 py-1 text-xs font-semibold text-sky-700 ring-1 ring-sky-100">
+            Bar chart
+          </span>
         </div>
 
-        <ResponsiveContainer width="100%" height={280}>
-          <BarChart data={data} layout="vertical" margin={{ top: 8, right: 20, left: 12, bottom: 8 }}>
-            <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
-            <XAxis type="number" tickFormatter={(value) => `${value}`} stroke="#94a3b8" />
-            <YAxis type="category" dataKey="category" width={110} stroke="#94a3b8" />
-            <Tooltip formatter={(value) => formatCurrency(value)} />
-            <Legend />
-            <Bar dataKey="amount" radius={[0, 8, 8, 0]}>
-              {data.map((entry, index) => (
-                <Cell key={entry.category} fill={getColor(index)} />
-              ))}
-            </Bar>
-          </BarChart>
-        </ResponsiveContainer>
-      </div>
+        <div className="h-[300px]">
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart data={data} layout="vertical" margin={{ top: 8, right: 20, left: 12, bottom: 8 }}>
+              <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+              <XAxis type="number" tickFormatter={(value) => `${value}`} stroke="#94a3b8" />
+              <YAxis type="category" dataKey="category" width={110} stroke="#94a3b8" />
+              <Tooltip formatter={(value) => formatCurrency(value)} />
+              <Legend />
+              <Bar dataKey="amount" radius={[0, 10, 10, 0]}>
+                {data.map((entry, index) => (
+                  <Cell key={entry.category} fill={getColor(index)} />
+                ))}
+              </Bar>
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+      </article>
     </section>
   );
 }

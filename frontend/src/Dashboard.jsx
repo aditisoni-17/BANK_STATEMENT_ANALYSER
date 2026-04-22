@@ -55,8 +55,7 @@ function Dashboard() {
 
     const fetchJob = async () => {
       try {
-        const payload = await apiRequest(`/jobs/${jobId}`, {
-        });
+        const payload = await apiRequest(`/jobs/${jobId}`);
         const job = payload?.data || payload;
         const status = job?.status || "unknown";
 
@@ -150,46 +149,25 @@ function Dashboard() {
     setRetryToken((value) => value + 1);
   };
 
+  const pageShell = "mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8";
+
   if (!jobId) {
     return (
-      <main
-        className="container"
-        style={{
-          maxWidth: 1280,
-          margin: "0 auto",
-          padding: "32px 24px 56px",
-        }}
-      >
-        <div style={{ padding: "64px 0" }}>
-          <p
-            style={{
-              margin: 0,
-              textTransform: "uppercase",
-              letterSpacing: "0.12em",
-              color: "#64748b",
-              fontSize: 12,
-              fontWeight: 600,
-            }}
-          >
+      <main className={pageShell}>
+        <div className="rounded-[28px] border border-slate-200 bg-white p-8 shadow-[0_24px_60px_rgba(15,23,42,0.08)] sm:p-10">
+          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
             Statement analysis
           </p>
-          <h1 style={{ margin: "10px 0 8px", fontSize: 36, color: "#0f172a" }}>No analysis found</h1>
-          <p style={{ margin: 0, color: "#64748b", maxWidth: 560, lineHeight: 1.6 }}>
+          <h1 className="mt-3 text-3xl font-semibold tracking-tight text-slate-950 sm:text-4xl">
+            No analysis found
+          </h1>
+          <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-600 sm:text-base">
             Upload a statement first so the dashboard can fetch results from the backend.
           </p>
           <button
             type="button"
             onClick={() => navigateTo("/upload")}
-            style={{
-              marginTop: 20,
-              border: "none",
-              borderRadius: 14,
-              padding: "12px 18px",
-              background: "#0f172a",
-              color: "#fff",
-              fontWeight: 600,
-              cursor: "pointer",
-            }}
+            className="mt-6 inline-flex items-center rounded-xl bg-slate-950 px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-slate-800"
           >
             Go to upload
           </button>
@@ -200,38 +178,22 @@ function Dashboard() {
 
   if (loading && !analysis) {
     return (
-      <main
-        className="container"
-        style={{
-          maxWidth: 1280,
-          margin: "0 auto",
-          padding: "32px 24px 56px",
-        }}
-      >
-        <div
-          style={{
-            padding: "72px 0",
-            display: "grid",
-            gap: 14,
-            justifyItems: "start",
-          }}
-        >
-          <p
-            style={{
-              margin: 0,
-              textTransform: "uppercase",
-              letterSpacing: "0.12em",
-              color: "#64748b",
-              fontSize: 12,
-              fontWeight: 600,
-            }}
-          >
-            Loading dashboard
-          </p>
-          <h1 style={{ margin: 0, fontSize: 36, color: "#0f172a" }}>Fetching your analysis</h1>
-          <p style={{ margin: 0, color: "#64748b", maxWidth: 560, lineHeight: 1.6 }}>
-            We are loading the latest processing job from the backend.
-          </p>
+      <main className={pageShell}>
+        <div className="grid gap-6 rounded-[28px] border border-slate-200 bg-gradient-to-br from-slate-50 to-white p-8 shadow-[0_24px_60px_rgba(15,23,42,0.06)] sm:p-10">
+          <div className="grid gap-3">
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
+              Loading dashboard
+            </p>
+            <h1 className="text-3xl font-semibold tracking-tight text-slate-950 sm:text-4xl">
+              Fetching your analysis
+            </h1>
+            <p className="max-w-2xl text-sm leading-6 text-slate-600 sm:text-base">
+              We are loading the latest processing job from the backend.
+            </p>
+          </div>
+          <div className="h-1.5 w-64 overflow-hidden rounded-full bg-slate-200">
+            <div className="h-full w-2/3 animate-pulse rounded-full bg-emerald-500" />
+          </div>
         </div>
       </main>
     );
@@ -239,66 +201,27 @@ function Dashboard() {
 
   if (error) {
     return (
-      <main
-        className="container"
-        style={{
-          maxWidth: 1280,
-          margin: "0 auto",
-          padding: "32px 24px 56px",
-        }}
-      >
-        <div
-          style={{
-            padding: "72px 0",
-            display: "grid",
-            gap: 14,
-            justifyItems: "start",
-          }}
-        >
-          <p
-            style={{
-              margin: 0,
-              textTransform: "uppercase",
-              letterSpacing: "0.12em",
-              color: "#b91c1c",
-              fontSize: 12,
-              fontWeight: 600,
-            }}
-          >
+      <main className={pageShell}>
+        <div className="rounded-[28px] border border-rose-200 bg-white p-8 shadow-[0_24px_60px_rgba(15,23,42,0.06)] sm:p-10">
+          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-rose-600">
             Dashboard error
           </p>
-          <h1 style={{ margin: 0, fontSize: 36, color: "#0f172a" }}>Could not load analysis</h1>
-          <p style={{ margin: 0, color: "#64748b", maxWidth: 560, lineHeight: 1.6 }}>
-            {error}
-          </p>
-          <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
+          <h1 className="mt-3 text-3xl font-semibold tracking-tight text-slate-950 sm:text-4xl">
+            Could not load analysis
+          </h1>
+          <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-600 sm:text-base">{error}</p>
+          <div className="mt-6 flex flex-wrap gap-3">
             <button
               type="button"
               onClick={handleRetry}
-              style={{
-                border: "none",
-                borderRadius: 14,
-                padding: "12px 18px",
-                background: "#0f172a",
-                color: "#fff",
-                fontWeight: 600,
-                cursor: "pointer",
-              }}
+              className="inline-flex items-center rounded-xl bg-slate-950 px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-slate-800"
             >
               Retry
             </button>
             <button
               type="button"
               onClick={() => navigateTo("/upload")}
-              style={{
-                border: "1px solid #cbd5e1",
-                borderRadius: 14,
-                padding: "12px 18px",
-                background: "#fff",
-                color: "#0f172a",
-                fontWeight: 600,
-                cursor: "pointer",
-              }}
+              className="inline-flex items-center rounded-xl border border-slate-200 bg-white px-5 py-3 text-sm font-semibold text-slate-900 shadow-sm transition hover:-translate-y-0.5 hover:border-slate-300 hover:bg-slate-50"
             >
               Upload again
             </button>
@@ -310,44 +233,21 @@ function Dashboard() {
 
   if (!analysis || transactions.length === 0) {
     return (
-      <main
-        className="container"
-        style={{
-          maxWidth: 1280,
-          margin: "0 auto",
-          padding: "32px 24px 56px",
-        }}
-      >
-        <div style={{ padding: "64px 0" }}>
-          <p
-            style={{
-              margin: 0,
-              textTransform: "uppercase",
-              letterSpacing: "0.12em",
-              color: "#64748b",
-              fontSize: 12,
-              fontWeight: 600,
-            }}
-          >
+      <main className={pageShell}>
+        <div className="rounded-[28px] border border-slate-200 bg-white p-8 shadow-[0_24px_60px_rgba(15,23,42,0.06)] sm:p-10">
+          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
             Statement analysis
           </p>
-          <h1 style={{ margin: "10px 0 8px", fontSize: 36, color: "#0f172a" }}>No data available</h1>
-          <p style={{ margin: 0, color: "#64748b", maxWidth: 560, lineHeight: 1.6 }}>
+          <h1 className="mt-3 text-3xl font-semibold tracking-tight text-slate-950 sm:text-4xl">
+            No data available
+          </h1>
+          <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-600 sm:text-base">
             We could not find a finished analysis for this job yet.
           </p>
           <button
             type="button"
             onClick={handleRetry}
-            style={{
-              marginTop: 20,
-              border: "none",
-              borderRadius: 14,
-              padding: "12px 18px",
-              background: "#0f172a",
-              color: "#fff",
-              fontWeight: 600,
-              cursor: "pointer",
-            }}
+            className="mt-6 inline-flex items-center rounded-xl bg-slate-950 px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-slate-800"
           >
             Retry
           </button>
@@ -357,66 +257,38 @@ function Dashboard() {
   }
 
   return (
-    <main
-      className="container"
-      style={{
-        maxWidth: 1280,
-        margin: "0 auto",
-        padding: "32px 24px 56px",
-      }}
-    >
-      <header
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          gap: 20,
-          alignItems: "flex-start",
-          marginBottom: 24,
-        }}
-      >
+    <main className={pageShell}>
+      <header className="flex flex-col gap-6 border-b border-slate-200 pb-6 lg:flex-row lg:items-end lg:justify-between">
         <div>
-          <p
-            style={{
-              margin: 0,
-              textTransform: "uppercase",
-              letterSpacing: "0.12em",
-              color: "#64748b",
-              fontSize: 12,
-              fontWeight: 600,
-            }}
-          >
+          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
             Statement analysis
           </p>
-          <h1 style={{ margin: "10px 0 8px", fontSize: 38, lineHeight: 1.1, color: "#0f172a" }}>
+          <h1 className="mt-3 text-3xl font-semibold tracking-tight text-slate-950 sm:text-4xl">
             Dashboard
           </h1>
-          <p style={{ margin: 0, color: "#64748b", maxWidth: 640, lineHeight: 1.6 }}>
+          <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-600 sm:text-base">
             Connected to live backend results from the processing job.
           </p>
-          <p style={{ margin: "8px 0 0", color: "#94a3b8", fontSize: 12 }}>
+          <p className="mt-2 text-xs font-medium uppercase tracking-[0.16em] text-slate-400">
             Job status: {jobStatus}
           </p>
         </div>
 
-        <div
-          style={{
-            display: "grid",
-            gap: 12,
-            minWidth: 210,
-            padding: 18,
-            borderRadius: 20,
-            background: "#fff",
-            border: "1px solid #e2e8f0",
-            boxShadow: "0 12px 32px rgba(15, 23, 42, 0.06)",
-          }}
-        >
-          <div>
-            <span style={{ display: "block", fontSize: 12, color: "#64748b" }}>Transactions</span>
-            <strong style={{ fontSize: 22, color: "#0f172a" }}>{transactions.length}</strong>
+        <div className="grid gap-4 rounded-[24px] border border-slate-200 bg-white p-5 shadow-[0_12px_32px_rgba(15,23,42,0.06)] sm:min-w-[240px]">
+          <div className="flex items-end justify-between gap-4">
+            <div>
+              <span className="block text-xs font-medium text-slate-500">Transactions</span>
+              <strong className="text-2xl font-semibold tracking-tight text-slate-950">
+                {transactions.length}
+              </strong>
+            </div>
+            <span className="rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700 ring-1 ring-emerald-100">
+              Live data
+            </span>
           </div>
           <div>
-            <span style={{ display: "block", fontSize: 12, color: "#64748b" }}>Top category</span>
-            <strong style={{ fontSize: 16, color: "#0f172a" }}>
+            <span className="block text-xs font-medium text-slate-500">Top category</span>
+            <strong className="mt-1 block text-base font-semibold text-slate-950">
               {insights?.top_category ??
                 insights?.highest_category?.category ??
                 insights?.highestCategory ??
@@ -426,7 +298,7 @@ function Dashboard() {
         </div>
       </header>
 
-      <div style={{ display: "grid", gap: 24 }}>
+      <div className="mt-8 grid gap-8">
         <InsightBanner insights={insights} />
 
         <SummaryCards
@@ -436,33 +308,24 @@ function Dashboard() {
           totalTransactions={totalTransactions}
         />
 
-        <section
-          style={{
-            display: "grid",
-            gap: 24,
-            gridTemplateColumns: "minmax(0, 1.5fr) minmax(320px, 1fr)",
-            alignItems: "start",
-          }}
-        >
+        <section className="grid gap-8 lg:grid-cols-[minmax(0,1.35fr)_minmax(320px,1fr)]">
           <ChartSection categoryBreakdown={categoryBreakdown} />
           <InsightsPanel insights={insights} transactions={transactions} />
         </section>
 
-        <section style={{ display: "grid", gap: 14 }}>
-          <div>
-            <p
-              style={{
-                margin: 0,
-                textTransform: "uppercase",
-                letterSpacing: "0.12em",
-                color: "#64748b",
-                fontSize: 12,
-                fontWeight: 600,
-              }}
-            >
-              Transactions
-            </p>
-            <h2 style={{ margin: "10px 0 0", fontSize: 24, color: "#0f172a" }}>Parsed transactions</h2>
+        <section className="grid gap-4">
+          <div className="flex items-end justify-between gap-4">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
+                Transactions
+              </p>
+              <h2 className="mt-2 text-2xl font-semibold tracking-tight text-slate-950">
+                Parsed transactions
+              </h2>
+            </div>
+            <span className="hidden rounded-full bg-sky-50 px-3 py-1 text-xs font-semibold text-sky-700 ring-1 ring-sky-100 sm:inline-flex">
+              {totalTransactions} rows
+            </span>
           </div>
           <TransactionsTable transactions={transactions} />
         </section>

@@ -14,127 +14,83 @@ function getConfidenceTone(confidence) {
   const value = Number(confidence) || 0;
 
   if (value > 0.8) {
-    return {
-      background: "#ecfdf5",
-      color: "#047857",
-      border: "#bbf7d0",
-    };
+    return "bg-emerald-50 text-emerald-700 ring-emerald-100";
   }
 
   if (value < 0.5) {
-    return {
-      background: "#fffbeb",
-      color: "#b45309",
-      border: "#fde68a",
-    };
+    return "bg-amber-50 text-amber-700 ring-amber-100";
   }
 
-  return {
-    background: "#eff6ff",
-    color: "#1d4ed8",
-    border: "#bfdbfe",
-  };
+  return "bg-sky-50 text-sky-700 ring-sky-100";
 }
 
 function TransactionsTable({ transactions = [] }) {
   if (!transactions.length) {
     return (
-      <div
-        style={{
-          borderRadius: 24,
-          border: "1px solid #e2e8f0",
-          background: "#fff",
-          padding: 24,
-          color: "#64748b",
-        }}
-      >
+      <div className="rounded-[24px] border border-slate-200 bg-white p-6 text-sm text-slate-500 shadow-sm">
         No transactions available.
       </div>
     );
   }
 
   return (
-    <div
-      style={{
-        overflow: "hidden",
-        borderRadius: 24,
-        border: "1px solid #e2e8f0",
-        background: "#fff",
-        boxShadow: "0 16px 40px rgba(15, 23, 42, 0.08)",
-      }}
-    >
-      <div style={{ overflowX: "auto" }}>
-        <table className="transactions-table" style={{ width: "100%", borderCollapse: "collapse" }}>
-          <thead>
+    <div className="overflow-hidden rounded-[24px] border border-slate-200 bg-white shadow-[0_16px_40px_rgba(15,23,42,0.08)]">
+      <div className="overflow-x-auto">
+        <table className="min-w-full border-separate border-spacing-0">
+          <thead className="sticky top-0 z-10 bg-slate-950 text-left text-white">
             <tr>
-              <th style={{ textAlign: "left" }}>Date</th>
-              <th style={{ textAlign: "left" }}>Description</th>
-              <th style={{ textAlign: "left" }}>Amount</th>
-              <th style={{ textAlign: "left" }}>Category</th>
-              <th style={{ textAlign: "left" }}>Confidence</th>
+              <th className="px-5 py-4 text-xs font-semibold uppercase tracking-[0.18em] text-slate-300">
+                Date
+              </th>
+              <th className="px-5 py-4 text-xs font-semibold uppercase tracking-[0.18em] text-slate-300">
+                Description
+              </th>
+              <th className="px-5 py-4 text-xs font-semibold uppercase tracking-[0.18em] text-slate-300">
+                Amount
+              </th>
+              <th className="px-5 py-4 text-xs font-semibold uppercase tracking-[0.18em] text-slate-300">
+                Category
+              </th>
+              <th className="px-5 py-4 text-xs font-semibold uppercase tracking-[0.18em] text-slate-300">
+                Confidence
+              </th>
             </tr>
           </thead>
           <tbody>
             {transactions.map((tx, index) => {
               const amount = Number(tx.amount) || 0;
               const confidence = Number(tx.confidence) || 0;
-              const confidenceTone = getConfidenceTone(confidence);
 
               return (
                 <tr
                   key={`${tx.date}-${index}`}
-                  style={{
-                    backgroundColor: index % 2 === 0 ? "#ffffff" : "#f8fafc",
-                    transition: "background-color 180ms ease, transform 180ms ease, box-shadow 180ms ease",
-                  }}
-                  onMouseEnter={(event) => {
-                    event.currentTarget.style.backgroundColor = "#eff6ff";
-                    event.currentTarget.style.transform = "translateY(-1px)";
-                  }}
-                  onMouseLeave={(event) => {
-                    event.currentTarget.style.backgroundColor = index % 2 === 0 ? "#ffffff" : "#f8fafc";
-                    event.currentTarget.style.transform = "translateY(0)";
-                  }}
+                  className={`transition-colors duration-200 ${
+                    index % 2 === 0 ? "bg-white" : "bg-slate-50/70"
+                  } hover:bg-sky-50/70`}
                 >
-                  <td>{tx.date}</td>
-                  <td>{tx.description}</td>
-                  <td style={{ color: amount < 0 ? "#dc2626" : "#16a34a", fontWeight: 600 }}>
+                  <td className="border-t border-slate-100 px-5 py-4 text-sm text-slate-600">
+                    {tx.date}
+                  </td>
+                  <td className="border-t border-slate-100 px-5 py-4 text-sm font-medium text-slate-900">
+                    {tx.description}
+                  </td>
+                  <td
+                    className={`border-t border-slate-100 px-5 py-4 text-sm font-semibold ${
+                      amount < 0 ? "text-rose-600" : "text-emerald-600"
+                    }`}
+                  >
                     {formatCurrency(amount)}
                   </td>
-                  <td>
-                    <span
-                      style={{
-                        display: "inline-flex",
-                        alignItems: "center",
-                        padding: "0.35rem 0.75rem",
-                        borderRadius: 9999,
-                        background: "#f8fafc",
-                        border: "1px solid #e2e8f0",
-                        color: "#334155",
-                        fontSize: 12,
-                        fontWeight: 600,
-                        letterSpacing: 0.2,
-                      }}
-                    >
+                  <td className="border-t border-slate-100 px-5 py-4">
+                    <span className="inline-flex items-center rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-xs font-semibold uppercase tracking-[0.14em] text-slate-700">
                       {tx.category || "OTHER"}
                     </span>
                   </td>
-                  <td>
+                  <td className="border-t border-slate-100 px-5 py-4">
                     <span
-                      style={{
-                        display: "inline-flex",
-                        alignItems: "center",
-                        gap: 8,
-                        padding: "0.35rem 0.75rem",
-                        borderRadius: 9999,
-                        background: confidenceTone.background,
-                        color: confidenceTone.color,
-                        border: `1px solid ${confidenceTone.border}`,
-                        fontSize: 12,
-                        fontWeight: 700,
-                        minWidth: 88,
-                        justifyContent: "center",
-                      }}
+                      className={`inline-flex min-w-[92px] items-center justify-center rounded-full px-3 py-1 text-xs font-semibold ring-1 ${getConfidenceTone(
+                        confidence
+                      )}`}
                     >
                       {formatConfidence(confidence)}%
                     </span>

@@ -68,65 +68,35 @@ function InsightsPanel({ insights, transactions = [] }) {
       ];
 
   return (
-    <section
-      style={{
-        display: "grid",
-        gap: 14,
-      }}
-    >
+    <section className="grid gap-4">
       {cards.slice(0, 3).map((row, index) => (
         <article
           key={`${row.label}-${index}`}
-          style={{
-            display: "flex",
-            gap: 16,
-            alignItems: "flex-start",
-            borderRadius: 22,
-            border: "1px solid #e2e8f0",
-            background: "#fff",
-            padding: 18,
-            boxShadow: "0 8px 24px rgba(15, 23, 42, 0.05)",
-            transition: "transform 180ms ease, box-shadow 180ms ease, border-color 180ms ease",
-          }}
-          onMouseEnter={(event) => {
-            event.currentTarget.style.transform = "translateY(-2px)";
-            event.currentTarget.style.boxShadow = "0 14px 30px rgba(15, 23, 42, 0.08)";
-            event.currentTarget.style.borderColor = row.tone === "warning" ? "#facc15" : "#93c5fd";
-          }}
-          onMouseLeave={(event) => {
-            event.currentTarget.style.transform = "translateY(0)";
-            event.currentTarget.style.boxShadow = "0 8px 24px rgba(15, 23, 42, 0.05)";
-            event.currentTarget.style.borderColor = "#e2e8f0";
-          }}
+          className="group flex gap-4 rounded-[22px] border border-slate-200 bg-white p-5 shadow-[0_8px_24px_rgba(15,23,42,0.05)] transition-all duration-200 hover:-translate-y-1 hover:border-slate-300 hover:shadow-[0_16px_40px_rgba(15,23,42,0.08)]"
         >
           <div
-            style={{
-              flex: "0 0 auto",
-              width: 10,
-              height: 10,
-              borderRadius: 9999,
-              marginTop: 6,
-              background: row.tone === "warning" ? "#f59e0b" : "#3b82f6",
-              boxShadow:
-                row.tone === "warning"
-                  ? "0 0 0 6px rgba(245, 158, 11, 0.12)"
-                  : "0 0 0 6px rgba(59, 130, 246, 0.12)",
-            }}
+            className={`mt-1 h-2.5 w-2.5 flex-none rounded-full ${
+              row.tone === "warning"
+                ? "bg-amber-500 ring-8 ring-amber-500/10"
+                : "bg-sky-500 ring-8 ring-sky-500/10"
+            }`}
           />
 
-          <div style={{ minWidth: 0 }}>
-            <p
-              style={{
-                margin: 0,
-                fontSize: 14,
-                color: "#0f172a",
-                fontWeight: 600,
-              }}
-            >
-              {row.label}
-            </p>
+          <div className="min-w-0 flex-1">
+            <div className="flex items-center justify-between gap-3">
+              <p className="text-sm font-semibold leading-6 text-slate-950">{row.label}</p>
+              <span
+                className={`hidden rounded-full px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] sm:inline-flex ${
+                  row.tone === "warning"
+                    ? "bg-amber-50 text-amber-700 ring-1 ring-amber-100"
+                    : "bg-sky-50 text-sky-700 ring-1 ring-sky-100"
+                }`}
+              >
+                {row.tone}
+              </span>
+            </div>
             {row.value ? (
-              <p style={{ margin: "6px 0 0", fontSize: 13, color: "#64748b" }}>{row.value}</p>
+              <p className="mt-1 text-sm leading-6 text-slate-500">{row.value}</p>
             ) : null}
           </div>
         </article>
